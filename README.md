@@ -1,4 +1,6 @@
-# CV Tailor
+<p align="center">
+  <img src="./docs/logo.png" alt="CV Tailor" width="480">
+</p>
 
 A localhost app that tailors your CV to a job description — entirely on your own machine, using a local model through [Ollama](https://ollama.com). No API key, no cloud, nothing leaves your computer.
 
