@@ -4,6 +4,10 @@
   "private": true,
   "description": "Tailor your CV to a job description, entirely locally, using Ollama.",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adamorad/cv-tailor.git"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
