@@ -39,7 +39,7 @@ export function FileTextInput({
   }
 
   return (
-    <div className="rounded-[var(--radius-card)] bg-surface border border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04)] p-4 flex flex-col gap-3">
+    <div className="rounded-[var(--radius-card)] bg-surface border border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04)] p-4 flex flex-col gap-3 transition-shadow focus-within:ring-2 focus-within:ring-accent/50">
       <div className="flex items-center justify-between">
         <label className="text-[13px] font-medium text-text-secondary">
           {label}
@@ -68,7 +68,7 @@ export function FileTextInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={12}
-        className="w-full bg-transparent text-[13px] font-mono leading-relaxed resize-y outline-none placeholder:text-text-secondary/60"
+        className="w-full bg-transparent text-[13px] font-mono leading-relaxed resize-y outline-none focus-visible:outline-none placeholder:text-text-secondary/60"
       />
       {error && <p className="text-[12px] text-red-600">{error}</p>}
     </div>

@@ -5,6 +5,7 @@ import type { Cv } from "@/lib/schema";
 import { FileTextInput } from "@/components/FileTextInput";
 import { ModelPicker } from "@/components/ModelPicker";
 import { CvPreview } from "@/components/CvPreview";
+import { CvSkeleton } from "@/components/CvSkeleton";
 import { ExportPanel } from "@/components/ExportPanel";
 
 export default function Home() {
@@ -67,7 +68,7 @@ export default function Home() {
           <h1 className="text-[40px] sm:text-[48px] font-semibold tracking-tight leading-[1.05]">
             Tailor your CV.
             <br />
-            Nothing leaves your Mac.
+            <span className="text-accent">Nothing leaves your Mac.</span>
           </h1>
           <p className="mt-3 text-[19px] text-text-secondary max-w-xl">
             Paste your CV and a job description. Pick a model that runs locally.
@@ -107,12 +108,23 @@ export default function Home() {
           {error && <p className="text-[13px] text-red-600">{error}</p>}
         </section>
 
-        {cv && (
+        {generating && (
           <section className="mt-16 pt-10 border-t border-hairline">
             <h2 className="text-[22px] font-semibold tracking-tight mb-5">
               Preview
             </h2>
             <div className="rounded-[var(--radius-card)] bg-surface border border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_28px_rgba(0,0,0,0.06)] p-8 sm:p-10">
+              <CvSkeleton />
+            </div>
+          </section>
+        )}
+
+        {!generating && cv && (
+          <section className="mt-16 pt-10 border-t border-hairline reveal">
+            <h2 className="text-[22px] font-semibold tracking-tight mb-5">
+              Preview
+            </h2>
+            <div className="mx-auto max-w-2xl rounded-[var(--radius-card)] bg-surface border border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04),0_20px_40px_rgba(0,0,0,0.08)] p-8 sm:p-12">
               <CvPreview cv={cv} />
             </div>
             <div className="mt-6">
