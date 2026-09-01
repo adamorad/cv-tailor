@@ -4,6 +4,13 @@ A localhost app that tailors your CV to a job description — entirely on your o
 
 Paste or upload (PDF/DOCX) your CV and a job description, pick a local model, and get back a tailored CV you can export as Markdown, plain text, HTML, Word (.docx), or PDF.
 
+## Screenshots
+
+|                                                       |                                                              |                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------- |
+| ![Hero and input screen](./docs/screenshots/hero.jpg) | ![Model picker](./docs/screenshots/model-picker.jpg)         | ![Generated CV preview](./docs/screenshots/preview.jpg) |
+| Paste or upload your CV and the job description       | Pick a local model — only the one you choose gets downloaded | Get a tailored preview, ready to export                 |
+
 ## How it works
 
 1. **Extraction** — uploaded PDF/DOCX files are converted to plain text locally (`unpdf`, `mammoth`).
@@ -31,6 +38,14 @@ Open [http://localhost:3000](http://localhost:3000) (or whatever port the dev se
 ## Tech stack
 
 Next.js (App Router) · TypeScript · Tailwind CSS · Ollama · Zod · `docx` · `pdfmake` · `unpdf` · `mammoth`
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for release notes.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=adamorad/cv-tailor&type=Date)](https://star-history.com/#adamorad/cv-tailor&Date)
 
 ## License
 
