@@ -6,6 +6,7 @@ import { FileTextInput } from "@/components/FileTextInput";
 import { ModelPicker } from "@/components/ModelPicker";
 import { CvPreview } from "@/components/CvPreview";
 import { CvSkeleton } from "@/components/CvSkeleton";
+import { GenerationProgress } from "@/components/GenerationProgress";
 import { ExportPanel } from "@/components/ExportPanel";
 
 export default function Home() {
@@ -113,7 +114,8 @@ export default function Home() {
             <h2 className="text-[22px] font-semibold tracking-tight mb-5">
               Preview
             </h2>
-            <div className="rounded-[var(--radius-card)] bg-surface border border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_28px_rgba(0,0,0,0.06)] p-8 sm:p-10">
+            <GenerationProgress active={generating} />
+            <div className="mt-4 rounded-[var(--radius-card)] bg-surface border border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_28px_rgba(0,0,0,0.06)] p-8 sm:p-10">
               <CvSkeleton />
             </div>
           </section>
