@@ -166,7 +166,7 @@ export function FileTextInput({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
-            rows={12}
+            rows={7}
             className="w-full bg-transparent text-[13px] font-mono leading-relaxed resize-y outline-none focus-visible:outline-none placeholder:text-text-secondary/60"
           />
           <p className="text-[11px] text-text-secondary/70">
@@ -174,7 +174,7 @@ export function FileTextInput({
           </p>
         </>
       ) : (
-        <div className="flex min-h-[240px] flex-col items-center justify-center gap-2 text-center border border-dashed border-hairline rounded-lg">
+        <div className="flex min-h-[144px] flex-col items-center justify-center gap-2 text-center border border-dashed border-hairline rounded-lg">
           <UploadIcon />
           <p className="text-[14px] font-medium">Drag & drop a file here</p>
           <p className="text-[12px] text-text-secondary">
