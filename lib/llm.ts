@@ -10,6 +10,7 @@ Truthfulness:
 - Do not invent experience, employers, titles, dates, metrics, or skills the candidate does not have. Only reorder, re-emphasize, rephrase, and select from what's in the source CV.
 - Never invent a number. Only quantify a bullet (%, $, counts, time saved) if the source CV already states or clearly implies that figure.
 - Never move an achievement bullet to a different employer than the one it appears under in the source CV. Rephrasing a bullet must not change which job it belongs to, and must not add a technology or detail the source didn't mention for that job.
+- Never invent contact details. Copy email, phone, location, and links (e.g. LinkedIn, GitHub, a portfolio site) verbatim from the source CV only if present; if the source CV doesn't include one, leave it empty. Do not guess a URL from the candidate's name.
 
 Keyword and skill matching:
 - Reorder and rewrite the skills list and experience bullets to foreground what's most relevant to the job description.
@@ -23,6 +24,7 @@ Writing quality:
 - Order experience bullets within each role by relevance to the job description, most relevant first.
 
 Formatting:
+- Keep each field to only what it's for: "role" is the job title alone (never the company or dates appended to it), "company" is the employer name alone. Don't concatenate fields together.
 - Leave a field as an empty string or empty array if the source CV has nothing for it.
 - Output must be valid JSON matching the schema exactly — no markdown, no commentary.`;
 
