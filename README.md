@@ -6,10 +6,14 @@ Paste or upload (PDF/DOCX) your CV and a job description, pick a local model, an
 
 ## Screenshots
 
-|                                                       |                                                              |                                                         |
-| ----------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------- |
-| ![Hero and input screen](./docs/screenshots/hero.jpg) | ![Model picker](./docs/screenshots/model-picker.jpg)         | ![Generated CV preview](./docs/screenshots/preview.jpg) |
-| Paste or upload your CV and the job description       | Pick a local model — only the one you choose gets downloaded | Get a tailored preview, ready to export                 |
+**Paste or upload your CV and the job description**
+![Hero and input screen](./docs/screenshots/hero.jpg)
+
+**Pick a local model — only the one you choose gets downloaded**
+![Model picker](./docs/screenshots/model-picker.jpg)
+
+**Get a tailored preview, ready to export**
+![Generated CV preview](./docs/screenshots/preview.jpg)
 
 ## How it works
 
