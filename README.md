@@ -30,7 +30,7 @@ There's no agent loop, no tool-calling, no multi-step pipeline — just one prom
 - Node.js 20+
 - [Ollama](https://ollama.com) installed and running (`ollama serve`)
 
-You don't need to pre-pull a model — the model picker in the UI lists a few curated options (Qwen 2.5 7B/14B, Llama 3.1 8B, Mistral 7B) and downloads whichever one you pick, with a progress indicator, the first time you select it.
+You don't need to pre-pull a model — the model picker in the UI lists a few curated, small-footprint options (Qwen 2.5 1.5B/3B/7B, Llama 3.2 3B — 1GB to 4.7GB) and downloads whichever one you pick, with a progress indicator, the first time you select it.
 
 ## Getting started
 

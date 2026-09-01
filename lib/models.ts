@@ -7,30 +7,29 @@ export interface ModelOption {
 
 export const CURATED_MODELS: ModelOption[] = [
   {
+    id: "qwen2.5:1.5b",
+    label: "Qwen 2.5 1.5B",
+    sizeGb: 1.0,
+    description:
+      "Tiny and fast. Good for quick iteration, lower tailoring quality.",
+  },
+  {
+    id: "llama3.2:3b",
+    label: "Llama 3.2 3B",
+    sizeGb: 2.0,
+    description: "Small and capable, solid instruction-following.",
+  },
+  {
+    id: "qwen2.5:3b",
+    label: "Qwen 2.5 3B",
+    sizeGb: 1.9,
+    description: "Best balance of size and quality. Recommended default.",
+  },
+  {
     id: "qwen2.5:7b",
     label: "Qwen 2.5 7B",
     sizeGb: 4.7,
     description:
-      "Balanced quality/speed, strong JSON-schema adherence. Recommended default.",
-  },
-  {
-    id: "llama3.1:8b",
-    label: "Llama 3.1 8B",
-    sizeGb: 4.9,
-    description: "Strong instruction-following, slightly slower.",
-  },
-  {
-    id: "mistral:7b",
-    label: "Mistral 7B",
-    sizeGb: 4.4,
-    description:
-      "Fastest of the set, somewhat less precise on structured output.",
-  },
-  {
-    id: "qwen2.5:14b",
-    label: "Qwen 2.5 14B",
-    sizeGb: 9.0,
-    description:
-      "Higher quality tailoring, noticeably slower and needs more RAM.",
+      "Highest quality of this set, still a fraction of a 14B model.",
   },
 ];

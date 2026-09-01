@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Real drag-and-drop file upload for the CV and job description cards, with a dashed-border drop overlay and a persistent hint so the affordance is discoverable without dragging first. Unsupported file types are rejected client-side with a clear message.
 
+### Changed
+
+- Swapped the curated model list for smaller options: Qwen 2.5 1.5B/3B/7B and Llama 3.2 3B (1GB–4.7GB), replacing Llama 3.1 8B, Mistral 7B, and Qwen 2.5 14B (4.4GB–9GB).
+
 ## [0.1.0] - 2026-09-01
 
 ### Added
