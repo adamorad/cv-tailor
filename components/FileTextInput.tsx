@@ -2,6 +2,13 @@
 
 import { useRef, useState } from "react";
 
+const ACCEPTED_EXTENSIONS = [".pdf", ".docx"];
+
+function hasAcceptedExtension(filename: string): boolean {
+  const lower = filename.toLowerCase();
+  return ACCEPTED_EXTENSIONS.some((ext) => lower.endsWith(ext));
+}
+
 export function FileTextInput({
   label,
   value,
@@ -15,9 +22,15 @@ export function FileTextInput({
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const dragCounter = useRef(0);
 
   async function handleFile(file: File) {
+    if (!hasAcceptedExtension(file.name)) {
+      setError("Only PDF and DOCX files are supported");
+      return;
+    }
     setUploading(true);
     setError(null);
     try {
@@ -39,7 +52,43 @@ export function FileTextInput({
   }
 
   return (
-    <div className="rounded-[var(--radius-card)] bg-surface border border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04)] p-4 flex flex-col gap-3 transition-shadow focus-within:ring-2 focus-within:ring-accent/50">
+    <div
+      onDragEnter={(e) => {
+        e.preventDefault();
+        if (e.dataTransfer.types.includes("Files")) {
+          dragCounter.current += 1;
+          setIsDragging(true);
+        }
+      }}
+      onDragOver={(e) => e.preventDefault()}
+      onDragLeave={(e) => {
+        e.preventDefault();
+        dragCounter.current -= 1;
+        if (dragCounter.current <= 0) {
+          dragCounter.current = 0;
+          setIsDragging(false);
+        }
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        dragCounter.current = 0;
+        setIsDragging(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) handleFile(file);
+      }}
+      className={`relative rounded-[var(--radius-card)] bg-surface border p-4 flex flex-col gap-3 transition-all focus-within:ring-2 focus-within:ring-accent/50 ${
+        isDragging
+          ? "border-accent border-dashed border-2 bg-accent/5"
+          : "border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04)]"
+      }`}
+    >
+      {isDragging && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[var(--radius-card)] bg-surface/90 pointer-events-none">
+          <p className="text-[14px] font-medium text-accent">
+            Drop to upload PDF or DOCX
+          </p>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <label className="text-[13px] font-medium text-text-secondary">
           {label}
@@ -70,6 +119,9 @@ export function FileTextInput({
         rows={12}
         className="w-full bg-transparent text-[13px] font-mono leading-relaxed resize-y outline-none focus-visible:outline-none placeholder:text-text-secondary/60"
       />
+      <p className="text-[11px] text-text-secondary/70">
+        Drag & drop a PDF or DOCX anywhere on this card to fill it in.
+      </p>
       {error && <p className="text-[12px] text-red-600">{error}</p>}
     </div>
   );
