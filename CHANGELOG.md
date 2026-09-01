@@ -17,10 +17,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Swapped the curated model list for smaller options: Qwen 2.5 1.5B/3B/7B and Llama 3.2 3B (1GB–4.7GB), replacing Llama 3.1 8B, Mistral 7B, and Qwen 2.5 14B (4.4GB–9GB).
 - Shrunk the CV/JD input boxes by 40%.
+- Replaced the top bar with a persistent left sidebar (logo, "On-device" badge) on wider screens; a compact top bar remains on mobile.
 
 ### Fixed
 
 - Smaller models (first observed with Qwen 2.5 3B) would occasionally invent a contact link (e.g. a LinkedIn URL) not present in the source CV, or concatenate the company name into the `role` field. The prompt now explicitly forbids inventing contact details and requires each field to hold only what it's for.
+- The page never declared `color-scheme`, so some browsers layered their own automatic dark theming on top of the app's own dark-mode CSS, rendering cards as a muddy half-inverted gray. Added `color-scheme: light dark`.
+- The initial sidebar implementation put the mobile header and main content as flex siblings in a row instead of stacking them, squeezing all page content into a ~48px sliver on narrow screens. Fixed by wrapping them in their own column.
 
 ## [0.1.0] - 2026-09-01
 
