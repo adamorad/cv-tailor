@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-02
+
 ### Added
 
 - GitHub Actions CI (lint, typecheck, build, test on every push/PR).
@@ -34,6 +36,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Session restore: the CV/job description text and picked model are saved to `localStorage` as you type and restored on next visit.
 - CV history: each successful generation is saved locally (last 20) and shown in the sidebar, so you can revisit a previous result without regenerating.
 - Cover letter generation: a "Generate cover letter" button in the preview produces an editable, grounded cover letter (`POST /api/cover-letter`) from the tailored CV and job description, with Copy and Download `.txt` actions.
+- `bin/cv-tailor`, a launcher script that starts the production server (if not already running) and opens it in the default browser — installed by the new Homebrew formula (`adamorad/cv-tailor` tap).
 
 ### Changed
 

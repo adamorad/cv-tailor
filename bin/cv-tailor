@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Launcher for the Homebrew-packaged app: starts the production server if it
+# isn't already running, then opens it in the default browser.
+set -euo pipefail
+
+PORT="${PORT:-3000}"
+URL="http://localhost:${PORT}"
+APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOG_FILE="${TMPDIR:-/tmp}/cv-tailor.log"
+
+open_browser() {
+  case "$(uname)" in
+    Darwin) open "$URL" ;;
+    Linux) xdg-open "$URL" >/dev/null 2>&1 || echo "Open $URL in your browser" ;;
+    *) echo "Open $URL in your browser" ;;
+  esac
+}
+
+if curl -s -o /dev/null "$URL"; then
+  open_browser
+  exit 0
+fi
+
+echo "Starting cv-tailor on $URL (logs: $LOG_FILE) ..."
+( cd "$APP_DIR" && PORT="$PORT" npm start >"$LOG_FILE" 2>&1 & )
+
+for _ in $(seq 1 60); do
+  if curl -s -o /dev/null "$URL"; then
+    open_browser
+    exit 0
+  fi
+  sleep 0.5
+done
+
+echo "cv-tailor didn't come up in time — check $LOG_FILE" >&2
+exit 1
