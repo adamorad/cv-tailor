@@ -29,7 +29,7 @@ function Brand() {
 
 function OnDeviceBadge() {
   return (
-    <span className="flex items-center gap-1.5 rounded-full bg-fill-secondary px-3 py-1 text-[12px] font-medium text-text-secondary self-start">
+    <span className="flex items-center gap-1.5 rounded-full bg-fill-secondary px-3 py-1 text-[12px] font-medium text-[#5a5a5f] dark:text-text-secondary self-start">
       <svg
         width="11"
         height="11"
