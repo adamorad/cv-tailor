@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Cv } from "@/lib/schema";
 import { FileTextInput } from "@/components/FileTextInput";
 import { ModelPicker } from "@/components/ModelPicker";
@@ -54,9 +54,14 @@ export default function Home() {
   const [cv, setCv] = useState<Cv | null>(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const previewHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const canGenerate =
     cvText.trim() && jobDescription.trim() && model && !generating;
+
+  useEffect(() => {
+    if (cv) previewHeadingRef.current?.focus();
+  }, [cv]);
 
   async function handleGenerate() {
     setGenerating(true);
@@ -79,6 +84,12 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen w-full">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-accent focus:text-white focus:px-4 focus:py-2 focus:rounded"
+      >
+        Skip to content
+      </a>
       {/* Sidebar — md and up */}
       <aside className="hidden md:flex md:flex-col md:gap-4 md:w-56 md:shrink-0 md:sticky md:top-0 md:h-screen md:border-r md:border-hairline md:bg-surface/50 md:backdrop-blur-xl md:p-6">
         <Brand />
@@ -94,7 +105,7 @@ export default function Home() {
           </div>
         </header>
 
-        <main className="flex-1 min-w-0 px-6 md:px-10 pb-24">
+        <main id="main-content" className="flex-1 min-w-0 px-6 md:px-10 pb-24">
           <div className="max-w-4xl pt-14 pb-10">
             <h1 className="text-[40px] sm:text-[48px] font-semibold tracking-tight leading-[1.05]">
               Tailor your CV.
@@ -152,10 +163,18 @@ export default function Home() {
           )}
 
           {!generating && cv && (
-            <section className="max-w-4xl mt-16 pt-10 border-t border-hairline reveal">
-              <h2 className="text-[22px] font-semibold tracking-tight mb-5">
+            <section
+              className="max-w-4xl mt-16 pt-10 border-t border-hairline reveal"
+              aria-live="polite"
+            >
+              <h2
+                ref={previewHeadingRef}
+                tabIndex={-1}
+                className="text-[22px] font-semibold tracking-tight mb-5"
+              >
                 Preview
               </h2>
+              <p className="sr-only">Preview ready</p>
               <div className="max-w-2xl rounded-[var(--radius-card)] bg-surface border border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04),0_20px_40px_rgba(0,0,0,0.08)] p-8 sm:p-12">
                 <CvPreview cv={cv} />
               </div>
