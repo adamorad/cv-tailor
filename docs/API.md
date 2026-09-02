@@ -162,3 +162,16 @@ client sent.
 The download filename is derived from `cv.name` via
 `sanitizeFilenameBase` (`lib/filename.ts`), which also guards against
 `Content-Disposition` header injection.
+
+## `GET /api/health`
+
+Reports whether the app can reach its local Ollama server. Not used by the
+UI — for scripting or monitoring (e.g. `curl localhost:3000/api/health`
+before automating a generation request).
+
+**Responses**
+
+| Status | Body                                                                | When                  |
+| ------ | ------------------------------------------------------------------- | --------------------- |
+| 200    | `{ status: "ok", ollama: "reachable" }`                             | Ollama responded      |
+| 503    | `{ status: "degraded", ollama: "unreachable", error: "<message>" }` | Ollama didn't respond |

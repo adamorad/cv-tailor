@@ -9,6 +9,15 @@ shared host, or behind a reverse proxy that makes it reachable by anyone other
 than you.** Run it only on your own machine, bound to localhost, as documented
 in the README.
 
+## Data & telemetry
+
+CV Tailor sends zero telemetry or analytics anywhere. The only network calls
+it makes are to your local Ollama server (`localhost:11434` by default). Your
+CV and job description text never leave your machine, and are never written
+to disk by the app itself. The app does log locally to the console (model
+name, timing, success/failure) for debugging generation issues, but never
+logs the CV or job description content itself.
+
 ## Supported versions
 
 Only the latest version on `main` is supported. There are no LTS branches or

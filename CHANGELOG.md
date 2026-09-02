@@ -20,6 +20,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Each input card now defaults to a drop zone instead of an empty text box, with a "Paste text instead" toggle and a "Clear" button to revert.
 - A trickle-style progress bar during CV generation (Ollama reports no incremental progress for a single completion, so this eases toward ~90% on a curve tuned to typical generation time rather than faking a real percentage).
 - README: a "Choosing a model" guide keyed to system RAM, and a "Cleaning up" section covering how to remove downloaded models and uninstall Ollama.
+- A Playwright E2E smoke test (mocked `/api/models`, no real Ollama needed) covering the landing page, drop-zone/paste-text toggle, model picker, and Generate button gating, plus an automated axe-core accessibility scan — both run in a separate `.github/workflows/e2e.yml`.
+- `docs/API.md` (full request/response reference for all routes), two ADRs (`docs/adr/`) explaining the local-Ollama and structured-JSON-schema decisions, and JSDoc on the exported `lib/` functions.
+- A README FAQ, Troubleshooting section, and Credits section.
+- An optional `Dockerfile` and `docker-compose.yml` for running the app alongside Ollama in containers — a secondary, community-convenience path, not the primary documented workflow.
+- `npm audit` and an SBOM-generation step in CI (report-only; doesn't block builds).
+- A `Content-Security-Policy` header alongside the existing security headers.
+- A `.github/workflows/release.yml` that auto-generates GitHub Release notes when a `v*` tag is pushed, complementing (not replacing) the hand-curated changelog.
+- A pre-commit hook (husky + lint-staged) that runs `eslint --fix` on staged files, installed automatically via `npm install`.
+- `GET /api/health`, reporting whether the app can reach its local Ollama server — for scripting/monitoring, not the UI.
+- Local-only structured logging around each generation call (model, timing, outcome — never CV/job-description content), and a friendlier error when a picked model doesn't support structured output at all.
+- An explicit "Data & telemetry" section in `SECURITY.md` stating plainly that the app sends zero telemetry and only ever talks to your local Ollama server.
 
 ### Changed
 
@@ -28,6 +39,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Replaced the top bar with a persistent left sidebar (logo, "On-device" badge) on wider screens; a compact top bar remains on mobile.
 
 ### Fixed
+
+- A genuine WCAG AA contrast failure on the "Upload PDF/DOCX" button (4.15:1, needs 4.5:1) and, after merging the sidebar and accessibility work together, a second one on the sidebar's "On-device" badge (4.41:1) — both caught by the new automated axe-core scan, not manual review.
 
 - Smaller models (first observed with Qwen 2.5 3B) would occasionally invent a contact link (e.g. a LinkedIn URL) not present in the source CV, or concatenate the company name into the `role` field. The prompt now explicitly forbids inventing contact details and requires each field to hold only what it's for.
 - The page never declared `color-scheme`, so some browsers layered their own automatic dark theming on top of the app's own dark-mode CSS, rendering cards as a muddy half-inverted gray. Added `color-scheme: light dark`.

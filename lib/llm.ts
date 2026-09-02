@@ -41,23 +41,48 @@ export async function generateTailoredCv(
   cvText: string,
   jobDescription: string,
 ): Promise<Cv> {
-  const response = await ollama.chat({
-    model,
-    stream: false,
-    format: z.toJSONSchema(cvSchema),
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: `SOURCE CV:\n${cvText}\n\nJOB DESCRIPTION:\n${jobDescription}`,
-      },
-    ],
-  });
+  const start = Date.now();
+  // Local-only: logs metadata (model, timing, outcome), never CV/JD content.
+  console.log(`[cv-tailor] generate: start model=${model}`);
+
+  let response;
+  try {
+    response = await ollama.chat({
+      model,
+      stream: false,
+      format: z.toJSONSchema(cvSchema),
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        {
+          role: "user",
+          content: `SOURCE CV:\n${cvText}\n\nJOB DESCRIPTION:\n${jobDescription}`,
+        },
+      ],
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.log(
+      `[cv-tailor] generate: failed model=${model} ms=${Date.now() - start} error=${message}`,
+    );
+    if (/does not support|not supported|unsupported/i.test(message)) {
+      throw new Error(
+        `${model} doesn't support structured output, which this app requires. Try a different model from the picker.`,
+      );
+    }
+    throw err;
+  }
 
   try {
     const parsed = JSON.parse(response.message.content);
-    return cvSchema.parse(parsed);
+    const cv = cvSchema.parse(parsed);
+    console.log(
+      `[cv-tailor] generate: ok model=${model} ms=${Date.now() - start}`,
+    );
+    return cv;
   } catch {
+    console.log(
+      `[cv-tailor] generate: bad-schema model=${model} ms=${Date.now() - start}`,
+    );
     throw new Error(
       `${model} returned a response that didn't match the expected CV structure. Try again, or pick a different model.`,
     );

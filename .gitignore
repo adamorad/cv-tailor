@@ -45,3 +45,7 @@ next-env.d.ts
 
 # sbom
 sbom.json
+
+# playwright
+/test-results/
+/playwright-report/
