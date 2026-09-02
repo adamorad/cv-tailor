@@ -143,7 +143,7 @@ export function FileTextInput({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="rounded-full bg-fill-secondary hover:bg-black/10 dark:hover:bg-white/15 px-3 py-1.5 text-[12px] font-medium text-accent transition disabled:opacity-50"
+            className="rounded-full bg-fill-secondary hover:bg-black/10 dark:hover:bg-white/15 px-3 py-1.5 text-[12px] font-medium text-[#0060c0] dark:text-accent transition disabled:opacity-50"
           >
             {uploading ? "Reading…" : "Upload PDF/DOCX"}
           </button>

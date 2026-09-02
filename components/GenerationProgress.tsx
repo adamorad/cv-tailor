@@ -31,7 +31,11 @@ export function GenerationProgress({ active }: { active: boolean }) {
   return (
     <div
       className="h-1 w-full overflow-hidden rounded-full bg-fill-secondary"
-      aria-hidden="true"
+      role="progressbar"
+      aria-valuenow={Math.round(progress)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label="Generating your tailored CV"
     >
       <div
         className="h-full rounded-full bg-accent"
