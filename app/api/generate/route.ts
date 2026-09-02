@@ -18,6 +18,16 @@ export async function POST(request: Request) {
     );
   }
 
+  const MAX_LENGTH = 50_000;
+  if (cvText.length > MAX_LENGTH || jobDescription.length > MAX_LENGTH) {
+    return Response.json(
+      {
+        error: `cvText and jobDescription must each be under ${MAX_LENGTH} characters`,
+      },
+      { status: 400 },
+    );
+  }
+
   if (!CURATED_MODELS.some((m) => m.id === model)) {
     return Response.json({ error: "Unknown model" }, { status: 400 });
   }
