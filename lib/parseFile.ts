@@ -1,6 +1,10 @@
 import { extractText, getDocumentProxy } from "unpdf";
 import mammoth from "mammoth";
 
+/**
+ * Converts an uploaded PDF or DOCX to plain text, entirely locally.
+ * Throws for any other extension.
+ */
 export async function extractTextFromFile(
   buffer: Uint8Array,
   filename: string,

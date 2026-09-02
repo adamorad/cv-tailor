@@ -1,0 +1,23 @@
+# Secondary, community-convenience path — see README "Running with Docker".
+# Not the primary documented workflow, and GPU acceleration for the `ollama`
+# service is NOT configured here; see
+# https://github.com/ollama/ollama/blob/main/docs/docker.md for that.
+services:
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+
+  app:
+    build: .
+    depends_on:
+      - ollama
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+    ports:
+      - "3000:3000"
+
+volumes:
+  ollama:

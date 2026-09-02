@@ -13,6 +13,7 @@ function bullet(text: string): Paragraph {
   return new Paragraph({ text, bullet: { level: 0 } });
 }
 
+/** Renders a `Cv` to a DOCX file buffer. Server-side only (see `app/api/export/route.ts`). */
 export async function toDocxBuffer(cv: Cv): Promise<Buffer> {
   const children: Paragraph[] = [];
 

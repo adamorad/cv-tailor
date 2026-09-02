@@ -2,7 +2,10 @@ import { Ollama } from "ollama";
 import { z } from "zod";
 import { cvSchema, type Cv } from "./schema";
 
-export const ollama = new Ollama({ host: "http://localhost:11434" });
+/** Shared Ollama client. Defaults to localhost; override with `OLLAMA_HOST` (e.g. for Docker). */
+export const ollama = new Ollama({
+  host: process.env.OLLAMA_HOST ?? "http://localhost:11434",
+});
 
 const SYSTEM_PROMPT = `You are a CV tailoring assistant. Given a candidate's existing CV and a target job description, produce a tailored version of the CV as structured JSON matching the provided schema.
 
@@ -28,6 +31,11 @@ Formatting:
 - Leave a field as an empty string or empty array if the source CV has nothing for it.
 - Output must be valid JSON matching the schema exactly — no markdown, no commentary.`;
 
+/**
+ * Makes the app's one LLM call: asks the model to tailor `cvText` toward
+ * `jobDescription`, constrained to the `Cv` JSON schema. Throws if the
+ * response can't be parsed or doesn't validate against `cvSchema`.
+ */
 export async function generateTailoredCv(
   model: string,
   cvText: string,
