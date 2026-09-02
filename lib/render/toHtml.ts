@@ -9,6 +9,11 @@ function esc(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
+/**
+ * Renders a `Cv` to a standalone HTML document. Pure and client-safe — no
+ * server round-trip. Escapes all field values and only linkifies `http(s)://`
+ * contact links, to prevent an LLM-generated field from injecting markup.
+ */
 export function toHtml(cv: Cv): string {
   const contactLine = contactBasicParts(cv).map(esc).join(" &middot; ");
 

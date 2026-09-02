@@ -18,6 +18,7 @@ pdfMake.setFonts({
 });
 pdfMake.setLocalAccessPolicy(() => true);
 
+/** Renders a `Cv` to a PDF file buffer. Server-side only (see `app/api/export/route.ts`). */
 export async function toPdfBuffer(cv: Cv): Promise<Buffer> {
   const content: Content[] = [{ text: cv.name, style: "name" }];
   if (cv.title) content.push({ text: cv.title, style: "title" });

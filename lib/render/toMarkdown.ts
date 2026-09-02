@@ -1,5 +1,6 @@
 import { contactParts, type Cv } from "../schema";
 
+/** Renders a `Cv` to Markdown. Pure and client-safe — no server round-trip. */
 export function toMarkdown(cv: Cv): string {
   const lines: string[] = [];
 

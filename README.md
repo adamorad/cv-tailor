@@ -44,6 +44,17 @@ Local models need roughly their own size in RAM to run comfortably, on top of wh
 
 Apple Silicon (M-series) Macs handle all four options well thanks to fast unified memory; on Intel Macs or slower GPUs, expect generation to take noticeably longer regardless of size. If you have the RAM and want a bigger model than the curated list offers, `ollama pull` any model yourself and add it to the list in `lib/models.ts`.
 
+## FAQ
+
+**Why local instead of a cloud AI API?**
+Privacy and cost, deliberately: your CV and the job description you're applying to are personal and sometimes sensitive, so nothing about them should leave your machine — no API key to manage, no per-call cost, no third party seeing your data. See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) and the `[0.1.0]` entry in [CHANGELOG.md](./CHANGELOG.md) for how this shaped the project from the start.
+
+**Why these four specific models?**
+Qwen 2.5 1.5B/3B/7B and Llama 3.2 3B were chosen for a small footprint (1GB–4.7GB) so the app stays usable on modest hardware without a long download or huge RAM commitment. See "Choosing a model" above for the RAM-based recommendation.
+
+**Can I use a bigger or different model?**
+Yes — `ollama pull` any model you want, then add an entry for it to the `CURATED_MODELS` array in `lib/models.ts` (each entry is `{ id, label, sizeGb, description }`, where `id` is the Ollama model tag). It'll then show up in the in-app model picker like the built-in options.
+
 ## Getting started
 
 ```bash
@@ -52,6 +63,27 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) (or whatever port the dev server prints).
+
+### Running with Docker
+
+A `docker-compose.yml` and `Dockerfile` are included as a secondary,
+community-convenience path — not the primary documented workflow above, and
+not as thoroughly exercised. It runs Ollama and the app as two services:
+
+```bash
+docker compose up --build
+```
+
+Then open [http://localhost:3000](http://localhost:3000); Ollama runs at
+`http://ollama:11434` inside the compose network, with model downloads
+persisted in a named volume.
+
+GPU acceleration for Ollama inside Docker requires extra host configuration
+(NVIDIA Container Toolkit, or Apple Silicon passthrough limitations) that
+this compose file does not set up — see
+[Ollama's own Docker docs](https://github.com/ollama/ollama/blob/main/docs/docker.md)
+for that. Without it, generation runs on CPU inside the container, which is
+noticeably slower than running Ollama natively on the host.
 
 ## Tech stack
 
@@ -83,6 +115,20 @@ rm -rf ~/.ollama                                              # models + config,
 rm -rf ~/Library/Application\ Support/Ollama
 ```
 
+## Troubleshooting
+
+**"Couldn't reach Ollama" error**
+Ollama isn't running, or isn't reachable on the port the app expects (`localhost:11434`). Start it with `ollama serve` (or launch the Ollama app) and try again.
+
+**A model pull or generation seems stuck**
+The first generation with a given model includes a cold load into memory, which can take a while — especially for larger models (7B) or slower hardware (Intel Macs, weaker GPUs). Give it a minute or two before assuming it's hung; subsequent generations with the same model are faster since it stays loaded.
+
+**"Unknown model" error**
+The app's curated model list and Ollama's installed models can get out of sync (e.g. you removed a model with `ollama rm` in another terminal). Refresh the page to re-sync the picker with what's actually installed.
+
+**PDF/DOCX upload failing**
+Only `.pdf` and `.docx` files are supported — `.doc` (old Word format) and other file types aren't. If the extension is right and it's still failing, the file itself may be corrupted or password-protected; try opening it in another app first to confirm it's readable.
+
 ## Contributing
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup and pre-PR checks, and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for how the pieces fit together. This project follows the [Contributor Covenant](./CODE_OF_CONDUCT.md).
@@ -98,6 +144,19 @@ See [CHANGELOG.md](./CHANGELOG.md) for release notes.
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=adamorad/cv-tailor&type=Date)](https://star-history.com/#adamorad/cv-tailor&Date)
+
+## Credits
+
+Built with:
+
+- [Next.js](https://nextjs.org) — the app framework
+- [Ollama](https://ollama.com) — runs the local LLM
+- [Zod](https://zod.dev) — the `Cv` schema, request validation, and JSON schema generation for structured output
+- [docx](https://docx.js.org) — DOCX export
+- [pdfmake](https://pdfmake.org) — PDF export
+- [unpdf](https://github.com/unjs/unpdf) — PDF text extraction
+- [mammoth](https://github.com/mwilliamson/mammoth.js) — DOCX text extraction
+- [Tailwind CSS](https://tailwindcss.com) — styling
 
 ## License
 
