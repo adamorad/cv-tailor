@@ -43,3 +43,9 @@ If your change touches `lib/llm.ts` (the system prompt), typecheck and lint won'
 ## Code style
 
 Match the existing code style. No comments unless they explain non-obvious _why_, not _what_. Avoid adding abstraction that isn't needed for the change at hand.
+
+## Pre-commit hook
+
+`npm install` sets up a Husky pre-commit hook automatically, which runs `eslint --fix` on staged `*.ts`/`*.tsx` files via lint-staged. No extra setup needed.
+
+We recommend (but don't require) writing commit messages in [Conventional Commits](https://www.conventionalcommits.org/) style (`feat:`, `fix:`, `docs:`, etc.) — the release workflow's auto-generated notes read better with them.

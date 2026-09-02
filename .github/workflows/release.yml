@@ -1,0 +1,21 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# This workflow auto-generates GitHub Release notes from commit history on
+# every `v*` tag push. It complements — it does not replace — the manually
+# curated entries in CHANGELOG.md; keep updating CHANGELOG.md by hand.
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
