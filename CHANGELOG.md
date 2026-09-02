@@ -31,6 +31,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `GET /api/health`, reporting whether the app can reach its local Ollama server — for scripting/monitoring, not the UI.
 - Local-only structured logging around each generation call (model, timing, outcome — never CV/job-description content), and a friendlier error when a picked model doesn't support structured output at all.
 - An explicit "Data & telemetry" section in `SECURITY.md` stating plainly that the app sends zero telemetry and only ever talks to your local Ollama server.
+- Session restore: the CV/job description text and picked model are saved to `localStorage` as you type and restored on next visit.
+- CV history: each successful generation is saved locally (last 20) and shown in the sidebar, so you can revisit a previous result without regenerating.
+- Cover letter generation: a "Generate cover letter" button in the preview produces an editable, grounded cover letter (`POST /api/cover-letter`) from the tailored CV and job description, with Copy and Download `.txt` actions.
 
 ### Changed
 
