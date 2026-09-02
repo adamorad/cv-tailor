@@ -8,6 +8,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- GitHub Actions CI (lint, typecheck, build, test on every push/PR).
+- A Vitest unit test suite: `sanitizeFilenameBase`, `contactParts`/`contactBasicParts`, and all five `lib/render/*` renderers, including a regression test for the HTML-export XSS fix.
+- `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `docs/ARCHITECTURE.md`.
+- GitHub issue templates, a PR template, `.github/dependabot.yml`, and `CODEOWNERS`.
+- A 50,000-character length guard on `cvText`/`jobDescription` in `/api/generate`.
+- Security response headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) via `next.config.ts`.
+- `.nvmrc` and an `engines` field pinning Node 20+.
+- Repo topics and a proper GitHub Release for `v0.1.0`.
 - Real drag-and-drop file upload for the CV and job description cards, with a dashed-border drop overlay and a persistent hint so the affordance is discoverable without dragging first. Unsupported file types are rejected client-side with a clear message.
 - Each input card now defaults to a drop zone instead of an empty text box, with a "Paste text instead" toggle and a "Clear" button to revert.
 - A trickle-style progress bar during CV generation (Ollama reports no incremental progress for a single completion, so this eases toward ~90% on a curve tuned to typical generation time rather than faking a real percentage).
@@ -24,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Smaller models (first observed with Qwen 2.5 3B) would occasionally invent a contact link (e.g. a LinkedIn URL) not present in the source CV, or concatenate the company name into the `role` field. The prompt now explicitly forbids inventing contact details and requires each field to hold only what it's for.
 - The page never declared `color-scheme`, so some browsers layered their own automatic dark theming on top of the app's own dark-mode CSS, rendering cards as a muddy half-inverted gray. Added `color-scheme: light dark`.
 - The initial sidebar implementation put the mobile header and main content as flex siblings in a row instead of stacking them, squeezing all page content into a ~48px sliver on narrow screens. Fixed by wrapping them in their own column.
+- Neither `eslint.config.mjs` nor `vitest.config.mts` excluded `.claude/` (git worktree scaffolding used by background agents, each a full checkout with its own `node_modules`). Lint went from clean to 926 errors and the test run picked up an unrelated package's internal test suite from a nested `node_modules`. Both configs now exclude `.claude/**` and `**/node_modules/**` properly.
 
 ## [0.1.0] - 2026-09-01
 

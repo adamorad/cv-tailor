@@ -83,6 +83,14 @@ rm -rf ~/.ollama                                              # models + config,
 rm -rf ~/Library/Application\ Support/Ollama
 ```
 
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for local setup and pre-PR checks, and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for how the pieces fit together. This project follows the [Contributor Covenant](./CODE_OF_CONDUCT.md).
+
+## Security
+
+This app is designed for `localhost` only and has no authentication — see [SECURITY.md](./SECURITY.md) before exposing it any other way, and for how to report a vulnerability.
+
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md) for release notes.
