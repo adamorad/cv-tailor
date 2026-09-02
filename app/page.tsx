@@ -2,12 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Cv } from "@/lib/schema";
+import {
+  loadDraft,
+  saveDraft,
+  loadHistory,
+  addToHistory,
+  clearHistory,
+  type HistoryEntry,
+} from "@/lib/storage";
 import { FileTextInput } from "@/components/FileTextInput";
 import { ModelPicker } from "@/components/ModelPicker";
 import { CvPreview } from "@/components/CvPreview";
 import { CvSkeleton } from "@/components/CvSkeleton";
 import { GenerationProgress } from "@/components/GenerationProgress";
 import { ExportPanel } from "@/components/ExportPanel";
+import { HistoryPanel } from "@/components/HistoryPanel";
+import { CoverLetterPanel } from "@/components/CoverLetterPanel";
 
 function Brand() {
   return (
@@ -52,12 +62,37 @@ export default function Home() {
   const [jobDescription, setJobDescription] = useState("");
   const [model, setModel] = useState<string | null>(null);
   const [cv, setCv] = useState<Cv | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [restored, setRestored] = useState(false);
   const previewHeadingRef = useRef<HTMLHeadingElement>(null);
 
   const canGenerate =
     cvText.trim() && jobDescription.trim() && model && !generating;
+
+  // Restore a saved draft + history once on mount. Only fires client-side
+  // (localStorage doesn't exist during SSR, so it can't be read in the
+  // initial useState without a hydration mismatch).
+  useEffect(() => {
+    const draft = loadDraft();
+    if (draft) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCvText(draft.cvText);
+      setJobDescription(draft.jobDescription);
+      setModel(draft.model);
+    }
+    setHistory(loadHistory());
+    setRestored(true);
+  }, []);
+
+  // Persist the draft as it changes, but not before the initial restore above
+  // has run — otherwise the empty initial state would immediately overwrite
+  // a saved draft before it's had a chance to load.
+  useEffect(() => {
+    if (!restored) return;
+    saveDraft({ cvText, jobDescription, model });
+  }, [restored, cvText, jobDescription, model]);
 
   useEffect(() => {
     if (cv) previewHeadingRef.current?.focus();
@@ -75,11 +110,21 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Generation failed");
       setCv(data.cv);
+      setHistory(addToHistory(data.cv));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generation failed");
     } finally {
       setGenerating(false);
     }
+  }
+
+  function handleSelectHistory(entry: HistoryEntry) {
+    setCv(entry.cv);
+  }
+
+  function handleClearHistory() {
+    clearHistory();
+    setHistory([]);
   }
 
   return (
@@ -94,10 +139,15 @@ export default function Home() {
       <aside className="hidden md:flex md:flex-col md:gap-4 md:w-56 md:shrink-0 md:sticky md:top-0 md:h-screen md:border-r md:border-hairline md:bg-surface/50 md:backdrop-blur-xl md:p-6">
         <Brand />
         <OnDeviceBadge />
+        <HistoryPanel
+          history={history}
+          onSelect={handleSelectHistory}
+          onClear={handleClearHistory}
+        />
       </aside>
 
+      {/* Compact header — mobile only */}
       <div className="flex flex-col flex-1 min-w-0">
-        {/* Compact header — mobile only */}
         <header className="md:hidden sticky top-0 z-10 border-b border-hairline bg-background/70 backdrop-blur-xl">
           <div className="px-6 h-[52px] flex items-center justify-between">
             <Brand />
@@ -181,6 +231,15 @@ export default function Home() {
               <div className="mt-6">
                 <ExportPanel cv={cv} />
               </div>
+              {model && (
+                <div className="max-w-2xl">
+                  <CoverLetterPanel
+                    cv={cv}
+                    jobDescription={jobDescription}
+                    model={model}
+                  />
+                </div>
+              )}
             </section>
           )}
         </main>
