@@ -6,9 +6,11 @@ vi.mock("@/lib/coverLetter", () => ({
 vi.mock("@/lib/llm", () => ({
   friendlyOllamaError: vi.fn(() => "friendly error"),
   GenerationAbortedError: class GenerationAbortedError extends Error {},
+  GenerationTimeoutError: class GenerationTimeoutError extends Error {},
 }));
 
 import { generateCoverLetter } from "@/lib/coverLetter";
+import { GenerationTimeoutError } from "@/lib/llm";
 import { POST } from "../route";
 
 function makeRequest(body: unknown): Request {
@@ -85,6 +87,16 @@ describe("POST /api/cover-letter", () => {
     );
     expect(res.status).toBe(502);
     expect(await res.json()).toEqual({ error: "friendly error" });
+  });
+
+  it("returns 504 with the timeout message when generation times out", async () => {
+    const timeoutError = new GenerationTimeoutError();
+    vi.mocked(generateCoverLetter).mockRejectedValueOnce(timeoutError);
+    const res = await POST(
+      makeRequest({ cv: validCv, jobDescription: "jd", model: "qwen2.5:3b" }),
+    );
+    expect(res.status).toBe(504);
+    expect(await res.json()).toEqual({ error: timeoutError.message });
   });
 
   it("returns the generated letter on success", async () => {

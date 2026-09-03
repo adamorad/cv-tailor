@@ -49,6 +49,8 @@ tailored `Cv` object from a source CV and a job description.
 | 400    | `{ error: "cvText, jobDescription, and model are all required" }`            | a required field is missing                                                                                 |
 | 400    | `{ error: "cvText and jobDescription must each be under 50000 characters" }` | length guard tripped                                                                                        |
 | 400    | `{ error: "Unknown model" }`                                                 | `model` isn't in the curated allowlist                                                                      |
+| 499    | (empty)                                                                      | the client cancelled the request (e.g. clicked Cancel) before the model finished                            |
+| 504    | `{ error: string }`                                                          | Ollama didn't respond within the generation timeout (4 minutes)                                             |
 | 502    | `{ error: string }`                                                          | Ollama unreachable, or the model's output didn't match the `Cv` schema (message from `friendlyOllamaError`) |
 
 ## `GET /api/models`
@@ -227,12 +229,14 @@ characters. `model` must be one of the ids in `CURATED_MODELS`
 
 **Responses**
 
-| Status | Body                                                         | When                                                    |
-| ------ | ------------------------------------------------------------ | ------------------------------------------------------- |
-| 200    | `{ letter: string }`                                         | success                                                 |
-| 400    | `{ error: "Invalid JSON body" }`                             | body isn't valid JSON                                   |
-| 400    | `{ error: "Invalid CV payload" }`                            | `cv` fails `cvSchema` validation                        |
-| 400    | `{ error: "jobDescription and model are required" }`         | a required field is missing                             |
-| 400    | `{ error: "jobDescription must be under 50000 characters" }` | length guard tripped                                    |
-| 400    | `{ error: "Unknown model" }`                                 | `model` isn't in the curated allowlist                  |
-| 502    | `{ error: string }`                                          | Ollama unreachable (message from `friendlyOllamaError`) |
+| Status | Body                                                         | When                                                                             |
+| ------ | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| 200    | `{ letter: string }`                                         | success                                                                          |
+| 400    | `{ error: "Invalid JSON body" }`                             | body isn't valid JSON                                                            |
+| 400    | `{ error: "Invalid CV payload" }`                            | `cv` fails `cvSchema` validation                                                 |
+| 400    | `{ error: "jobDescription and model are required" }`         | a required field is missing                                                      |
+| 400    | `{ error: "jobDescription must be under 50000 characters" }` | length guard tripped                                                             |
+| 400    | `{ error: "Unknown model" }`                                 | `model` isn't in the curated allowlist                                           |
+| 499    | (empty)                                                      | the client cancelled the request (e.g. clicked Cancel) before the model finished |
+| 504    | `{ error: string }`                                          | Ollama didn't respond within the generation timeout (2 minutes)                  |
+| 502    | `{ error: string }`                                          | Ollama unreachable (message from `friendlyOllamaError`)                          |

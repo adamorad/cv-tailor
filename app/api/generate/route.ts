@@ -2,6 +2,7 @@ import {
   generateTailoredCv,
   friendlyOllamaError,
   GenerationAbortedError,
+  GenerationTimeoutError,
 } from "@/lib/llm";
 import { CURATED_MODELS } from "@/lib/models";
 
@@ -48,6 +49,10 @@ export async function POST(request: Request) {
     if (err instanceof GenerationAbortedError) {
       // Client already disconnected — nothing to deliver a body to.
       return new Response(null, { status: 499 });
+    }
+    if (err instanceof GenerationTimeoutError) {
+      // Client is still waiting — give it a real error, unlike the cancel case above.
+      return Response.json({ error: err.message }, { status: 504 });
     }
     return Response.json({ error: friendlyOllamaError(err) }, { status: 502 });
   }
