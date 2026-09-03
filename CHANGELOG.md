@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- A Cancel button during CV and cover letter generation. Cancelling aborts the in-progress Ollama stream server-side (not just the client-side fetch), so the model actually stops generating instead of finishing unseen.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added

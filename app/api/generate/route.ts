@@ -1,4 +1,8 @@
-import { generateTailoredCv, friendlyOllamaError } from "@/lib/llm";
+import {
+  generateTailoredCv,
+  friendlyOllamaError,
+  GenerationAbortedError,
+} from "@/lib/llm";
 import { CURATED_MODELS } from "@/lib/models";
 
 export async function POST(request: Request) {
@@ -33,9 +37,18 @@ export async function POST(request: Request) {
   }
 
   try {
-    const cv = await generateTailoredCv(model, cvText, jobDescription);
+    const cv = await generateTailoredCv(
+      model,
+      cvText,
+      jobDescription,
+      request.signal,
+    );
     return Response.json({ cv });
   } catch (err) {
+    if (err instanceof GenerationAbortedError) {
+      // Client already disconnected — nothing to deliver a body to.
+      return new Response(null, { status: 499 });
+    }
     return Response.json({ error: friendlyOllamaError(err) }, { status: 502 });
   }
 }
