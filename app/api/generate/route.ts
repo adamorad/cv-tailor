@@ -4,6 +4,10 @@ import {
   GenerationAbortedError,
   GenerationTimeoutError,
 } from "@/lib/llm";
+import {
+  withGenerationLock,
+  GenerationInProgressError,
+} from "@/lib/concurrencyGuard";
 import { CURATED_MODELS } from "@/lib/models";
 
 export async function POST(request: Request) {
@@ -38,14 +42,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const cv = await generateTailoredCv(
-      model,
-      cvText,
-      jobDescription,
-      request.signal,
+    const cv = await withGenerationLock(() =>
+      generateTailoredCv(model, cvText, jobDescription, request.signal),
     );
     return Response.json({ cv });
   } catch (err) {
+    if (err instanceof GenerationInProgressError) {
+      return Response.json({ error: err.message }, { status: 409 });
+    }
     if (err instanceof GenerationAbortedError) {
       // Client already disconnected — nothing to deliver a body to.
       return new Response(null, { status: 499 });
