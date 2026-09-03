@@ -86,6 +86,7 @@ export function CoverLetterPanel({
           <button
             type="button"
             onClick={handleCancel}
+            aria-label="Cancel cover letter generation"
             className="rounded-full px-3 py-1.5 text-[13px] font-medium text-text-secondary hover:text-foreground transition"
           >
             Cancel

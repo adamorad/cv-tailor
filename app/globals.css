@@ -90,4 +90,8 @@ body {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
+
+  .progress-fill {
+    transition: none !important;
+  }
 }
