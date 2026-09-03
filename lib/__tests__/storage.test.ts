@@ -77,6 +77,44 @@ test("clearHistory empties it", () => {
   expect(loadHistory()).toEqual([]);
 });
 
+test("loadHistory drops entries with an invalid cv shape but keeps valid ones", () => {
+  const valid = { id: "a", createdAt: 1, cv: sampleCv };
+  const badCv = { id: "b", createdAt: 2, cv: { ...sampleCv, name: 123 } };
+  localStorage.setItem("cv-tailor:history", JSON.stringify([valid, badCv]));
+  expect(loadHistory()).toEqual([valid]);
+});
+
+test("loadHistory drops entries missing id/createdAt or with wrong types", () => {
+  const valid = { id: "a", createdAt: 1, cv: sampleCv };
+  const missingId = { createdAt: 2, cv: sampleCv };
+  const wrongTypeCreatedAt = {
+    id: "c",
+    createdAt: "not-a-number",
+    cv: sampleCv,
+  };
+  const notAnObject = "just a string";
+  const nullEntry = null;
+  localStorage.setItem(
+    "cv-tailor:history",
+    JSON.stringify([
+      valid,
+      missingId,
+      wrongTypeCreatedAt,
+      notAnObject,
+      nullEntry,
+    ]),
+  );
+  expect(loadHistory()).toEqual([valid]);
+});
+
+test("loadHistory returns [] when the whole array is garbage", () => {
+  localStorage.setItem(
+    "cv-tailor:history",
+    JSON.stringify([{ foo: "bar" }, 42, "nope"]),
+  );
+  expect(loadHistory()).toEqual([]);
+});
+
 test("storage functions degrade to no-ops instead of throwing when localStorage is unavailable", () => {
   delete (globalThis as { localStorage?: unknown }).localStorage;
   expect(() =>
