@@ -39,11 +39,68 @@ export class GenerationAbortedError extends Error {
   }
 }
 
+/** Thrown instead of a normal error when generation hit its wall-clock timeout, as opposed to being cancelled by the caller. */
+export class GenerationTimeoutError extends Error {
+  constructor() {
+    super(
+      "Ollama didn't respond in time — it may be stuck; try restarting it or picking a different model.",
+    );
+    this.name = "GenerationTimeoutError";
+  }
+}
+
+// A 7B model has taken 30s+ in manual testing on modest hardware; this leaves
+// generous headroom while still bounding a genuinely hung request.
+const GENERATION_TIMEOUT_MS = 4 * 60_000;
+
+/**
+ * Combines an optional caller `signal` with a wall-clock timeout, so a hung
+ * Ollama call still gives up on its own. `AbortSignal.any` needs an array of
+ * actual signals, so the timeout is always included and the caller signal
+ * only when present.
+ */
+export function withTimeout(
+  signal: AbortSignal | undefined,
+  timeoutMs: number,
+): AbortSignal {
+  const timeout = AbortSignal.timeout(timeoutMs);
+  return signal ? AbortSignal.any([signal, timeout]) : timeout;
+}
+
+/** True if `signal` (from `withTimeout`) aborted because its timeout fired, not because the caller cancelled it. */
+export function isTimeoutAbort(signal: AbortSignal): boolean {
+  return (
+    signal.reason instanceof DOMException &&
+    signal.reason.name === "TimeoutError"
+  );
+}
+
+/**
+ * Rejects with `signal`'s abort reason as soon as it fires, without waiting
+ * for `promise`. Needed because `ollama.chat()`'s initial request has no way
+ * to accept an external abort signal — only the stream it eventually
+ * resolves to does — so without this, a hang before that resolution
+ * (connection accepted but no response ever sent) can't be timed out.
+ */
+export function raceSignal<T>(
+  promise: Promise<T>,
+  signal: AbortSignal,
+): Promise<T> {
+  if (signal.aborted) return Promise.reject(signal.reason);
+  return new Promise<T>((resolve, reject) => {
+    signal.addEventListener("abort", () => reject(signal.reason), {
+      once: true,
+    });
+    promise.then(resolve, reject);
+  });
+}
+
 /**
  * Makes the app's one LLM call: asks the model to tailor `cvText` toward
  * `jobDescription`, constrained to the `Cv` JSON schema. Throws if the
- * response can't be parsed or doesn't validate against `cvSchema`, or a
- * `GenerationAbortedError` if `signal` fires before the model finishes.
+ * response can't be parsed or doesn't validate against `cvSchema`, a
+ * `GenerationAbortedError` if `signal` fires before the model finishes, or a
+ * `GenerationTimeoutError` if it hasn't finished within `GENERATION_TIMEOUT_MS`.
  */
 export async function generateTailoredCv(
   model: string,
@@ -55,29 +112,42 @@ export async function generateTailoredCv(
   // Local-only: logs metadata (model, timing, outcome), never CV/JD content.
   console.log(`[cv-tailor] generate: start model=${model}`);
 
+  const combinedSignal = withTimeout(signal, GENERATION_TIMEOUT_MS);
+
   let content = "";
   try {
-    const stream = await ollama.chat({
-      model,
-      stream: true,
-      format: z.toJSONSchema(cvSchema),
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: `SOURCE CV:\n${cvText}\n\nJOB DESCRIPTION:\n${jobDescription}`,
-        },
-      ],
-    });
-    if (signal?.aborted) stream.abort();
+    const stream = await raceSignal(
+      ollama.chat({
+        model,
+        stream: true,
+        format: z.toJSONSchema(cvSchema),
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          {
+            role: "user",
+            content: `SOURCE CV:\n${cvText}\n\nJOB DESCRIPTION:\n${jobDescription}`,
+          },
+        ],
+      }),
+      combinedSignal,
+    );
+    if (combinedSignal.aborted) stream.abort();
     else
-      signal?.addEventListener("abort", () => stream.abort(), { once: true });
+      combinedSignal.addEventListener("abort", () => stream.abort(), {
+        once: true,
+      });
 
     for await (const chunk of stream) {
       content += chunk.message.content;
     }
   } catch (err) {
-    if (signal?.aborted) {
+    if (combinedSignal.aborted) {
+      if (isTimeoutAbort(combinedSignal)) {
+        console.log(
+          `[cv-tailor] generate: timed-out model=${model} ms=${Date.now() - start}`,
+        );
+        throw new GenerationTimeoutError();
+      }
       console.log(
         `[cv-tailor] generate: aborted model=${model} ms=${Date.now() - start}`,
       );

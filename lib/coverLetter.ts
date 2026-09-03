@@ -1,4 +1,11 @@
-import { ollama, GenerationAbortedError } from "./llm";
+import {
+  ollama,
+  GenerationAbortedError,
+  GenerationTimeoutError,
+  withTimeout,
+  isTimeoutAbort,
+  raceSignal,
+} from "./llm";
 import type { Cv } from "./schema";
 
 const SYSTEM_PROMPT = `You write a short, professional cover letter for a job application, using only facts already present in the candidate's CV (provided as JSON) — do not invent employers, titles, dates, or achievements not in that CV.
@@ -9,10 +16,15 @@ Rules:
 - Plain prose only — no markdown, no bullet points, no subject line, no placeholder brackets.
 - Sign off with the candidate's name from the CV.`;
 
+// Cover letters are much shorter output than a full CV, so a hung request can
+// reasonably be caught sooner.
+const COVER_LETTER_TIMEOUT_MS = 2 * 60_000;
+
 /**
  * One LLM call: writes a cover letter from an already-tailored `Cv` and the
  * job description. Throws a `GenerationAbortedError` if `signal` fires
- * before the model finishes.
+ * before the model finishes, or a `GenerationTimeoutError` if it hasn't
+ * finished within `COVER_LETTER_TIMEOUT_MS`.
  */
 export async function generateCoverLetter(
   model: string,
@@ -21,28 +33,41 @@ export async function generateCoverLetter(
   signal?: AbortSignal,
 ): Promise<string> {
   const start = Date.now();
+  const combinedSignal = withTimeout(signal, COVER_LETTER_TIMEOUT_MS);
+
   let content = "";
   try {
-    const stream = await ollama.chat({
-      model,
-      stream: true,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: `CANDIDATE CV (JSON):\n${JSON.stringify(cv)}\n\nJOB DESCRIPTION:\n${jobDescription}`,
-        },
-      ],
-    });
-    if (signal?.aborted) stream.abort();
+    const stream = await raceSignal(
+      ollama.chat({
+        model,
+        stream: true,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          {
+            role: "user",
+            content: `CANDIDATE CV (JSON):\n${JSON.stringify(cv)}\n\nJOB DESCRIPTION:\n${jobDescription}`,
+          },
+        ],
+      }),
+      combinedSignal,
+    );
+    if (combinedSignal.aborted) stream.abort();
     else
-      signal?.addEventListener("abort", () => stream.abort(), { once: true });
+      combinedSignal.addEventListener("abort", () => stream.abort(), {
+        once: true,
+      });
 
     for await (const chunk of stream) {
       content += chunk.message.content;
     }
   } catch (err) {
-    if (signal?.aborted) {
+    if (combinedSignal.aborted) {
+      if (isTimeoutAbort(combinedSignal)) {
+        console.log(
+          `[cv-tailor] cover-letter: timed-out model=${model} ms=${Date.now() - start}`,
+        );
+        throw new GenerationTimeoutError();
+      }
       console.log(
         `[cv-tailor] cover-letter: aborted model=${model} ms=${Date.now() - start}`,
       );
