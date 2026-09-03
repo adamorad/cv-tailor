@@ -42,6 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - CI's `build` and `sbom` jobs now cache npm dependencies via `actions/setup-node@v7`'s `cache: 'npm'` option, instead of running a full `npm ci` from scratch every run.
 - CI's `npm audit` step now fails the build on a `critical`-severity vulnerability (previously report-only via `continue-on-error`); high/moderate/low still just report, since there's no triage process for those yet.
 - `docs/ARCHITECTURE.md` refreshed to match the current codebase: corrected the stale `stream: false` claim (generation actually uses `stream: true`, needed for cancellation/timeout), and added coverage of cover letter generation, the client-side persistence layer (`lib/storage.ts`), the model pull/cancel/delete lifecycle (`app/api/models/route.ts`, `lib/diskSpace.ts`), and the health-check/error-boundary pages — all of which had shipped since the doc was last updated.
+- README's "Choosing a model" section now includes real observed generation times (typical value and range across 3 runs each) for Qwen 2.5 1.5B/3B/7B, measured by calling `POST /api/generate` directly with a realistic CV and job description on a Mac mini (M4, 16GB RAM), replacing the previous RAM-only qualitative guidance. Labeled as one data point from one machine, not a guarantee. Llama 3.2 3B wasn't benchmarked (the machine was low on disk at the time) and is called out as such rather than estimated.
 
 ## [0.2.0] - 2026-09-02
 
