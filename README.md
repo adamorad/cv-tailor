@@ -44,6 +44,17 @@ Local models need roughly their own size in RAM to run comfortably, on top of wh
 
 Apple Silicon (M-series) Macs handle all four options well thanks to fast unified memory; on Intel Macs or slower GPUs, expect generation to take noticeably longer regardless of size. If you have the RAM and want a bigger model than the curated list offers, `ollama pull` any model yourself and add it to the list in `lib/models.ts`.
 
+**For reference, real generation times:** measured by hitting `POST /api/generate` directly (the same call the UI makes) with a realistic ~350-word CV and ~280-word job description, 3 runs per model, on a Mac mini (M4 chip, 16GB RAM):
+
+| Model         | Typical generation time                                                    | Observed range |
+| ------------- | -------------------------------------------------------------------------- | -------------- |
+| Qwen 2.5 1.5B | ~14s                                                                       | 11–17s         |
+| Qwen 2.5 3B   | ~19s                                                                       | 18–25s         |
+| Llama 3.2 3B  | not benchmarked — pull it yourself (`ollama pull llama3.2:3b`) and compare | —              |
+| Qwen 2.5 7B   | ~37s                                                                       | 35–50s         |
+
+These are one data point from one machine, not a guarantee — actual times will vary with your hardware, and with how long your CV and job description are. Llama 3.2 3B wasn't benchmarked here because this machine was low on disk space at the time; its speed should be broadly similar to Qwen 2.5 3B given the comparable parameter count.
+
 ## FAQ
 
 **Why local instead of a cloud AI API?**
