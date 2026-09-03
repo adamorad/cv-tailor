@@ -8,6 +8,7 @@ import {
   loadHistory,
   addToHistory,
   clearHistory,
+  clearAll,
   type HistoryEntry,
 } from "@/lib/storage";
 import { FileTextInput } from "@/components/FileTextInput";
@@ -168,6 +169,21 @@ export default function Home() {
     setHistory([]);
   }
 
+  function handleClearAll() {
+    if (
+      !window.confirm(
+        "Clear all local data? This clears your saved draft (CV text, job description, model) and all CV history. This can't be undone, though a cleared CV can always be regenerated.",
+      )
+    )
+      return;
+    clearAll();
+    setCvText("");
+    setJobDescription("");
+    setModel(null);
+    setCv(null);
+    setHistory([]);
+  }
+
   return (
     <div className="flex min-h-screen w-full">
       <a
@@ -185,6 +201,13 @@ export default function Home() {
           onSelect={handleSelectHistory}
           onClear={handleClearHistory}
         />
+        <button
+          type="button"
+          onClick={handleClearAll}
+          className="mt-auto text-left text-[11px] text-text-secondary hover:text-foreground transition"
+        >
+          Clear all local data
+        </button>
       </aside>
 
       {/* Compact header — mobile only */}

@@ -5,6 +5,7 @@ import {
   loadHistory,
   addToHistory,
   clearHistory,
+  clearAll,
 } from "../storage";
 import { sampleCv } from "../render/__tests__/fixtures";
 
@@ -105,6 +106,18 @@ test("loadHistory drops entries missing id/createdAt or with wrong types", () =>
     ]),
   );
   expect(loadHistory()).toEqual([valid]);
+});
+
+test("clearAll clears both the draft and the history", () => {
+  saveDraft({
+    cvText: "my cv",
+    jobDescription: "the job",
+    model: "qwen2.5:3b",
+  });
+  addToHistory(sampleCv);
+  clearAll();
+  expect(loadDraft()).toEqual({ cvText: "", jobDescription: "", model: null });
+  expect(loadHistory()).toEqual([]);
 });
 
 test("loadHistory returns [] when the whole array is garbage", () => {
