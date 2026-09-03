@@ -11,6 +11,7 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "coverage/**",
     "next-env.d.ts",
     // Agent worktree scaffolding (full checkouts incl. their own node_modules)
     ".claude/**",

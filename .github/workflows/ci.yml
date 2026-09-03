@@ -34,6 +34,14 @@ jobs:
 
       - run: npm test
 
+      - name: Coverage (report-only)
+        run: npm run test:coverage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
   sbom:
     runs-on: ubuntu-latest
     steps:
