@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { contactParts, type Cv } from "@/lib/schema";
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -8,7 +9,10 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function CvPreview({ cv }: { cv: Cv }) {
+// The rendered CV only depends on `cv`, which is stable except when a new
+// CV is generated or a history entry is selected — memoize so unrelated
+// edits to the CV/JD text (which don't change `cv`) don't re-render it.
+function CvPreviewComponent({ cv }: { cv: Cv }) {
   const contactLine = contactParts(cv).join("  ·  ");
 
   return (
@@ -102,3 +106,5 @@ export function CvPreview({ cv }: { cv: Cv }) {
     </div>
   );
 }
+
+export const CvPreview = memo(CvPreviewComponent);
