@@ -16,6 +16,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - A live Ollama-reachability check driving the sidebar's badge: it polls `GET /api/health` on mount, every 20s, and on window focus, and switches from "On-device" (green dot) to "Ollama unreachable" (red dot) when the local server can't be reached — purely informational, doesn't block Generate.
 - `app/error.tsx` and `app/not-found.tsx`, matching the app's existing design language, replacing Next.js's default fallback pages for uncaught render errors and unmatched routes.
 - A `.github/workflows/codeql.yml` running CodeQL static analysis (JavaScript/TypeScript) on every push and PR to `main`, plus a weekly schedule.
+- `.editorconfig` pinning UTF-8, LF, a final newline, trimmed trailing whitespace, and 2-space indentation to match the repo's existing conventions.
+
+### Changed
+
+- CI's `npm audit` step now fails the build on a `critical`-severity vulnerability (previously report-only via `continue-on-error`); high/moderate/low still just report, since there's no triage process for those yet.
 
 ## [0.2.0] - 2026-09-02
 
