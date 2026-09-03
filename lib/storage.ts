@@ -98,3 +98,12 @@ export function addToHistory(cv: Cv): HistoryEntry[] {
 export function clearHistory(): void {
   safeSet(HISTORY_KEY, JSON.stringify([]));
 }
+
+/** Clears everything this app has stored in localStorage: the draft and the history. */
+export function clearAll(): void {
+  safeSet(
+    DRAFT_KEY,
+    JSON.stringify({ cvText: "", jobDescription: "", model: null }),
+  );
+  safeSet(HISTORY_KEY, JSON.stringify([]));
+}
