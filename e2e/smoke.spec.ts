@@ -48,6 +48,13 @@ test.beforeEach(async ({ page }) => {
     }
     await route.fulfill({ json: { models: MOCK_MODELS } });
   });
+
+  // The sidebar's Ollama status badge polls GET /api/health on mount; mock
+  // it reachable so tests aren't asserting against the real (absent) CI
+  // Ollama server.
+  await page.route("**/api/health", async (route) => {
+    await route.fulfill({ json: { status: "ok", ollama: "reachable" } });
+  });
 });
 
 test("landing page renders, inputs work, and generate gates correctly", async ({
