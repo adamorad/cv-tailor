@@ -104,15 +104,17 @@ test("landing page renders, inputs work, and generate gates correctly", async ({
   // Still disabled: CV + JD text present, but no model selected yet.
   await expect(generateButton).toBeDisabled();
 
-  // Model picker renders the four curated model cards.
+  // Model picker renders the four curated model cards, plus a "Remove"
+  // button on the one pre-"downloaded" card.
   const modelGroup = page.getByRole("group", { name: "Model" });
-  await expect(modelGroup.getByRole("button")).toHaveCount(4);
+  await expect(modelGroup.getByRole("button")).toHaveCount(5);
   for (const m of MOCK_MODELS) {
     await expect(modelGroup.getByText(m.label)).toBeVisible();
   }
 
-  // Select the already-"downloaded" model.
-  await modelGroup.getByRole("button", { name: /Qwen 2\.5 3B/ }).click();
+  // Select the already-"downloaded" model. Anchored so it doesn't also match
+  // that card's "Remove Qwen 2.5 3B" button.
+  await modelGroup.getByRole("button", { name: /^Qwen 2\.5 3B/ }).click();
 
   // Now that CV text + JD text + model are all provided, the button enables.
   await expect(generateButton).toBeEnabled();
