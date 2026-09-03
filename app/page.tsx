@@ -25,7 +25,7 @@ function Brand() {
     <span className="flex items-center gap-2">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/icon.png"
+        src="/logo-small.png"
         alt=""
         width={22}
         height={22}
