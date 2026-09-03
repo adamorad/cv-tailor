@@ -54,7 +54,7 @@ test("generates a tailored CV, records it in history, and exports it", async ({
     });
   });
 
-  await page.getByRole("button", { name: "Word", exact: true }).click();
+  await page.getByRole("tab", { name: "Word", exact: true }).click();
   const downloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Download Word" }).click();
   const download = await downloadPromise;
