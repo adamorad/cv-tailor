@@ -42,16 +42,17 @@ tailored `Cv` object from a source CV and a job description.
 
 **Responses**
 
-| Status | Body                                                                         | When                                                                                                        |
-| ------ | ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| 200    | `{ cv: Cv }`                                                                 | success                                                                                                     |
-| 400    | `{ error: "Invalid JSON body" }`                                             | body isn't valid JSON                                                                                       |
-| 400    | `{ error: "cvText, jobDescription, and model are all required" }`            | a required field is missing                                                                                 |
-| 400    | `{ error: "cvText and jobDescription must each be under 50000 characters" }` | length guard tripped                                                                                        |
-| 400    | `{ error: "Unknown model" }`                                                 | `model` isn't in the curated allowlist                                                                      |
-| 499    | (empty)                                                                      | the client cancelled the request (e.g. clicked Cancel) before the model finished                            |
-| 504    | `{ error: string }`                                                          | Ollama didn't respond within the generation timeout (4 minutes)                                             |
-| 502    | `{ error: string }`                                                          | Ollama unreachable, or the model's output didn't match the `Cv` schema (message from `friendlyOllamaError`) |
+| Status | Body                                                                                           | When                                                                                                        |
+| ------ | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 200    | `{ cv: Cv }`                                                                                   | success                                                                                                     |
+| 400    | `{ error: "Invalid JSON body" }`                                                               | body isn't valid JSON                                                                                       |
+| 400    | `{ error: "cvText, jobDescription, and model are all required" }`                              | a required field is missing                                                                                 |
+| 400    | `{ error: "cvText and jobDescription must each be under 50000 characters" }`                   | length guard tripped                                                                                        |
+| 400    | `{ error: "Unknown model" }`                                                                   | `model` isn't in the curated allowlist                                                                      |
+| 409    | `{ error: "Another generation is already in progress — wait for it to finish or cancel it." }` | a CV or cover letter generation is already running (see [Concurrency](#concurrency) below)                  |
+| 499    | (empty)                                                                                        | the client cancelled the request (e.g. clicked Cancel) before the model finished                            |
+| 504    | `{ error: string }`                                                                            | Ollama didn't respond within the generation timeout (4 minutes)                                             |
+| 502    | `{ error: string }`                                                                            | Ollama unreachable, or the model's output didn't match the `Cv` schema (message from `friendlyOllamaError`) |
 
 ## `GET /api/models`
 
@@ -229,14 +230,25 @@ characters. `model` must be one of the ids in `CURATED_MODELS`
 
 **Responses**
 
-| Status | Body                                                         | When                                                                             |
-| ------ | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| 200    | `{ letter: string }`                                         | success                                                                          |
-| 400    | `{ error: "Invalid JSON body" }`                             | body isn't valid JSON                                                            |
-| 400    | `{ error: "Invalid CV payload" }`                            | `cv` fails `cvSchema` validation                                                 |
-| 400    | `{ error: "jobDescription and model are required" }`         | a required field is missing                                                      |
-| 400    | `{ error: "jobDescription must be under 50000 characters" }` | length guard tripped                                                             |
-| 400    | `{ error: "Unknown model" }`                                 | `model` isn't in the curated allowlist                                           |
-| 499    | (empty)                                                      | the client cancelled the request (e.g. clicked Cancel) before the model finished |
-| 504    | `{ error: string }`                                          | Ollama didn't respond within the generation timeout (2 minutes)                  |
-| 502    | `{ error: string }`                                          | Ollama unreachable (message from `friendlyOllamaError`)                          |
+| Status | Body                                                                                           | When                                                                                       |
+| ------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| 200    | `{ letter: string }`                                                                           | success                                                                                    |
+| 400    | `{ error: "Invalid JSON body" }`                                                               | body isn't valid JSON                                                                      |
+| 400    | `{ error: "Invalid CV payload" }`                                                              | `cv` fails `cvSchema` validation                                                           |
+| 400    | `{ error: "jobDescription and model are required" }`                                           | a required field is missing                                                                |
+| 400    | `{ error: "jobDescription must be under 50000 characters" }`                                   | length guard tripped                                                                       |
+| 400    | `{ error: "Unknown model" }`                                                                   | `model` isn't in the curated allowlist                                                     |
+| 409    | `{ error: "Another generation is already in progress — wait for it to finish or cancel it." }` | a CV or cover letter generation is already running (see [Concurrency](#concurrency) below) |
+| 499    | (empty)                                                                                        | the client cancelled the request (e.g. clicked Cancel) before the model finished           |
+| 504    | `{ error: string }`                                                                            | Ollama didn't respond within the generation timeout (2 minutes)                            |
+| 502    | `{ error: string }`                                                                            | Ollama unreachable (message from `friendlyOllamaError`)                                    |
+
+## Concurrency
+
+`/api/generate` and `/api/cover-letter` share a single in-memory lock
+(`withGenerationLock` in [`lib/concurrencyGuard.ts`](../lib/concurrencyGuard.ts)),
+since both ultimately run one Ollama call on the same local hardware. Only
+one generation — of either kind — may run at a time; a request that arrives
+while one is already in flight is rejected immediately with `409`, not
+queued. This app is single-user and single-process, so a module-level flag
+is sufficient — no external coordination is needed.
