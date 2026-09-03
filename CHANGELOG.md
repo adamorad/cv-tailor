@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- A disk-space check before pulling a model in `POST /api/models`: rejects with a 400 (before the download stream starts) if free space is under the model's `sizeGb` plus a 1GB safety margin, instead of starting a multi-gigabyte download that could fill the disk.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added
