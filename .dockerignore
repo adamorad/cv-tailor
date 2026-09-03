@@ -4,3 +4,10 @@ node_modules
 .claude
 coverage
 npm-debug.log*
+.env*
+.vercel
+.DS_Store
+*.tsbuildinfo
+sbom.json
+/test-results/
+/playwright-report/
