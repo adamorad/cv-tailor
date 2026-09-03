@@ -77,11 +77,12 @@ progress back as the pull runs.
 
 **Responses**
 
-| Status | Body                                                                | When                                   |
-| ------ | ------------------------------------------------------------------- | -------------------------------------- |
-| 400    | `{ error: "Invalid JSON body" }`                                    | body isn't valid JSON                  |
-| 400    | `{ error: "Unknown model" }`                                        | `model` isn't in the curated allowlist |
-| 200    | newline-delimited JSON stream, `Content-Type: application/x-ndjson` | valid request                          |
+| Status | Body                                                                                   | When                                                                        |
+| ------ | -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| 400    | `{ error: "Invalid JSON body" }`                                                       | body isn't valid JSON                                                       |
+| 400    | `{ error: "Unknown model" }`                                                           | `model` isn't in the curated allowlist                                      |
+| 400    | `{ error: "Not enough disk space to download <label> (~<n>GB needed, ~<n>GB free)." }` | available disk space is under the model's `sizeGb` plus a 1GB safety margin |
+| 200    | newline-delimited JSON stream, `Content-Type: application/x-ndjson`                    | valid request                                                               |
 
 Once the stream starts, HTTP status is always 200 (headers are already sent)
 — failures mid-pull are reported in-band as a chunk instead. Each line is one
