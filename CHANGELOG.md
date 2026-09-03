@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - CI's `npm audit` step now fails the build on a `critical`-severity vulnerability (previously report-only via `continue-on-error`); high/moderate/low still just report, since there's no triage process for those yet.
+- `docs/ARCHITECTURE.md` refreshed to match the current codebase: corrected the stale `stream: false` claim (generation actually uses `stream: true`, needed for cancellation/timeout), and added coverage of cover letter generation, the client-side persistence layer (`lib/storage.ts`), the model pull/cancel/delete lifecycle (`app/api/models/route.ts`, `lib/diskSpace.ts`), and the health-check/error-boundary pages — all of which had shipped since the doc was last updated.
 
 ## [0.2.0] - 2026-09-02
 
