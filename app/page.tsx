@@ -37,7 +37,37 @@ function Brand() {
   );
 }
 
-function OnDeviceBadge() {
+// Ollama runs as a background process independent of this app, so it can
+// stop or start at any time — poll lightly rather than only checking once.
+const OLLAMA_CHECK_INTERVAL_MS = 20_000;
+
+function useOllamaReachable() {
+  const [reachable, setReachable] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function check() {
+      try {
+        const res = await fetch("/api/health");
+        if (!cancelled) setReachable(res.ok);
+      } catch {
+        if (!cancelled) setReachable(false);
+      }
+    }
+    check();
+    const interval = setInterval(check, OLLAMA_CHECK_INTERVAL_MS);
+    window.addEventListener("focus", check);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      window.removeEventListener("focus", check);
+    };
+  }, []);
+
+  return reachable;
+}
+
+function OnDeviceBadge({ reachable }: { reachable: boolean }) {
   return (
     <span className="flex items-center gap-1.5 rounded-full bg-fill-secondary px-3 py-1 text-[12px] font-medium text-[#5a5a5f] dark:text-text-secondary self-start">
       <svg
@@ -45,14 +75,14 @@ function OnDeviceBadge() {
         height="11"
         viewBox="0 0 24 24"
         fill="none"
-        className="text-success"
+        className={reachable ? "text-success" : "text-red-600"}
       >
         <path
           d="M12 2 4 5v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V5l-8-3Z"
           fill="currentColor"
         />
       </svg>
-      On-device
+      {reachable ? "On-device" : "Ollama unreachable"}
     </span>
   );
 }
@@ -68,6 +98,7 @@ export default function Home() {
   const [restored, setRestored] = useState(false);
   const previewHeadingRef = useRef<HTMLHeadingElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const ollamaReachable = useOllamaReachable();
 
   const canGenerate =
     cvText.trim() && jobDescription.trim() && model && !generating;
@@ -148,7 +179,7 @@ export default function Home() {
       {/* Sidebar — md and up */}
       <aside className="hidden md:flex md:flex-col md:gap-4 md:w-56 md:shrink-0 md:sticky md:top-0 md:h-screen md:border-r md:border-hairline md:bg-surface/50 md:backdrop-blur-xl md:p-6">
         <Brand />
-        <OnDeviceBadge />
+        <OnDeviceBadge reachable={ollamaReachable} />
         <HistoryPanel
           history={history}
           onSelect={handleSelectHistory}
@@ -161,7 +192,7 @@ export default function Home() {
         <header className="md:hidden sticky top-0 z-10 border-b border-hairline bg-background/70 backdrop-blur-xl">
           <div className="px-6 h-[52px] flex items-center justify-between">
             <Brand />
-            <OnDeviceBadge />
+            <OnDeviceBadge reachable={ollamaReachable} />
           </div>
         </header>
 
