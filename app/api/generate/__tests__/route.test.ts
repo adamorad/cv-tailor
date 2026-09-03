@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/llm", () => ({
   generateTailoredCv: vi.fn(),
   friendlyOllamaError: vi.fn(() => "friendly error"),
+  GenerationAbortedError: class GenerationAbortedError extends Error {},
 }));
 
 import { generateTailoredCv } from "@/lib/llm";
