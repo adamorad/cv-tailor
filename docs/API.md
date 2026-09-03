@@ -1,6 +1,6 @@
 # API
 
-All four routes are internal to the app (called by the UI, not meant as a
+All routes are internal to the app (called by the UI, not meant as a
 public API) and only ever reachable on `localhost` — see
 [SECURITY.md](../SECURITY.md). Every route accepts/returns JSON except
 `/api/export`, which returns a binary file, and `/api/parse-file`, which
@@ -199,17 +199,12 @@ characters. `model` must be one of the ids in `CURATED_MODELS`
 
 **Responses**
 
-| Status | Body                                                          | When                                                    |
-| ------ | ------------------------------------------------------------- | ------------------------------------------------------- |
-| 200    | `{ letter: string }`                                          | success                                                 |
-| 400    | `{ error: "Invalid JSON body" }`                              | body isn't valid JSON                                   |
-| 400    | `{ error: "Invalid CV payload" }`                             | `cv` fails `cvSchema` validation                        |
-| 400    | `{ error: "jobDescription and model are required" }`          | a required field is missing                             |
-| 400    | `{ error: "jobDescription must be under 50000 characters" }`  | length guard tripped                                    |
-| 400    | `{ error: "Unknown model" }`                                  | `model` isn't in the curated allowlist                  |
-| 502    | `{ error: string }`                                           | Ollama unreachable (message from `friendlyOllamaError`) |
-| 400    | `{ error: "cv, jobDescription, and model are all required" }` | a required field is missing                             |
-| 400    | `{ error: "jobDescription must be under 50000 characters" }`  | length guard tripped                                    |
-| 400    | `{ error: "Invalid CV payload" }`                             | `cv` fails `cvSchema` validation                        |
-| 400    | `{ error: "Unknown model" }`                                  | `model` isn't in the curated allowlist                  |
-| 502    | `{ error: string }`                                           | Ollama unreachable (message from `friendlyOllamaError`) |
+| Status | Body                                                         | When                                                    |
+| ------ | ------------------------------------------------------------ | ------------------------------------------------------- |
+| 200    | `{ letter: string }`                                         | success                                                 |
+| 400    | `{ error: "Invalid JSON body" }`                             | body isn't valid JSON                                   |
+| 400    | `{ error: "Invalid CV payload" }`                            | `cv` fails `cvSchema` validation                        |
+| 400    | `{ error: "jobDescription and model are required" }`         | a required field is missing                             |
+| 400    | `{ error: "jobDescription must be under 50000 characters" }` | length guard tripped                                    |
+| 400    | `{ error: "Unknown model" }`                                 | `model` isn't in the curated allowlist                  |
+| 502    | `{ error: string }`                                          | Ollama unreachable (message from `friendlyOllamaError`) |
