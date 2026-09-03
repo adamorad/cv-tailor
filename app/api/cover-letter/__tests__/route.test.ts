@@ -5,6 +5,7 @@ vi.mock("@/lib/coverLetter", () => ({
 }));
 vi.mock("@/lib/llm", () => ({
   friendlyOllamaError: vi.fn(() => "friendly error"),
+  GenerationAbortedError: class GenerationAbortedError extends Error {},
 }));
 
 import { generateCoverLetter } from "@/lib/coverLetter";

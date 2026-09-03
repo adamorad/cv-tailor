@@ -31,25 +31,35 @@ Formatting:
 - Leave a field as an empty string or empty array if the source CV has nothing for it.
 - Output must be valid JSON matching the schema exactly — no markdown, no commentary.`;
 
+/** Thrown instead of a normal error when generation was cancelled via `signal`. */
+export class GenerationAbortedError extends Error {
+  constructor() {
+    super("Generation was cancelled");
+    this.name = "GenerationAbortedError";
+  }
+}
+
 /**
  * Makes the app's one LLM call: asks the model to tailor `cvText` toward
  * `jobDescription`, constrained to the `Cv` JSON schema. Throws if the
- * response can't be parsed or doesn't validate against `cvSchema`.
+ * response can't be parsed or doesn't validate against `cvSchema`, or a
+ * `GenerationAbortedError` if `signal` fires before the model finishes.
  */
 export async function generateTailoredCv(
   model: string,
   cvText: string,
   jobDescription: string,
+  signal?: AbortSignal,
 ): Promise<Cv> {
   const start = Date.now();
   // Local-only: logs metadata (model, timing, outcome), never CV/JD content.
   console.log(`[cv-tailor] generate: start model=${model}`);
 
-  let response;
+  let content = "";
   try {
-    response = await ollama.chat({
+    const stream = await ollama.chat({
       model,
-      stream: false,
+      stream: true,
       format: z.toJSONSchema(cvSchema),
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
@@ -59,7 +69,20 @@ export async function generateTailoredCv(
         },
       ],
     });
+    if (signal?.aborted) stream.abort();
+    else
+      signal?.addEventListener("abort", () => stream.abort(), { once: true });
+
+    for await (const chunk of stream) {
+      content += chunk.message.content;
+    }
   } catch (err) {
+    if (signal?.aborted) {
+      console.log(
+        `[cv-tailor] generate: aborted model=${model} ms=${Date.now() - start}`,
+      );
+      throw new GenerationAbortedError();
+    }
     const message = err instanceof Error ? err.message : String(err);
     console.log(
       `[cv-tailor] generate: failed model=${model} ms=${Date.now() - start} error=${message}`,
@@ -73,7 +96,7 @@ export async function generateTailoredCv(
   }
 
   try {
-    const parsed = JSON.parse(response.message.content);
+    const parsed = JSON.parse(content);
     const cv = cvSchema.parse(parsed);
     console.log(
       `[cv-tailor] generate: ok model=${model} ms=${Date.now() - start}`,

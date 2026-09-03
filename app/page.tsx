@@ -67,6 +67,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [restored, setRestored] = useState(false);
   const previewHeadingRef = useRef<HTMLHeadingElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const canGenerate =
     cvText.trim() && jobDescription.trim() && model && !generating;
@@ -101,21 +102,30 @@ export default function Home() {
   async function handleGenerate() {
     setGenerating(true);
     setError(null);
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cvText, jobDescription, model }),
+        signal: controller.signal,
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Generation failed");
       setCv(data.cv);
       setHistory(addToHistory(data.cv));
     } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
       setError(err instanceof Error ? err.message : "Generation failed");
     } finally {
+      abortControllerRef.current = null;
       setGenerating(false);
     }
+  }
+
+  function handleCancel() {
+    abortControllerRef.current?.abort();
   }
 
   function handleSelectHistory(entry: HistoryEntry) {
@@ -206,6 +216,13 @@ export default function Home() {
                 Preview
               </h2>
               <GenerationProgress active={generating} />
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="mt-3 rounded-full bg-fill-secondary hover:bg-black/10 dark:hover:bg-white/15 px-4 py-1.5 text-[13px] font-medium text-text-secondary transition"
+              >
+                Cancel
+              </button>
               <div className="mt-4 rounded-[var(--radius-card)] bg-surface border border-hairline shadow-[0_1px_2px_rgba(0,0,0,0.04),0_12px_28px_rgba(0,0,0,0.06)] p-8 sm:p-10">
                 <CvSkeleton />
               </div>
