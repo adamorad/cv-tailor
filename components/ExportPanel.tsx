@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Cv } from "@/lib/schema";
 import { sanitizeFilenameBase } from "@/lib/filename";
 import { toMarkdown } from "@/lib/render/toMarkdown";
@@ -30,9 +30,30 @@ export function ExportPanel({ cv }: { cv: Cv }) {
   const [format, setFormat] = useState<Format>("md");
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const filenameBase = sanitizeFilenameBase(cv.name);
   const formatLabel = FORMATS.find((f) => f.id === format)!.label;
+
+  function handleTablistKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    const currentIndex = FORMATS.findIndex((f) => f.id === format);
+    let nextIndex: number | null = null;
+
+    if (e.key === "ArrowRight") {
+      nextIndex = (currentIndex + 1) % FORMATS.length;
+    } else if (e.key === "ArrowLeft") {
+      nextIndex = (currentIndex - 1 + FORMATS.length) % FORMATS.length;
+    } else if (e.key === "Home") {
+      nextIndex = 0;
+    } else if (e.key === "End") {
+      nextIndex = FORMATS.length - 1;
+    }
+
+    if (nextIndex === null) return;
+    e.preventDefault();
+    setFormat(FORMATS[nextIndex].id);
+    tabRefs.current[nextIndex]?.focus();
+  }
 
   async function handleDownload() {
     setError(null);
@@ -80,22 +101,36 @@ export function ExportPanel({ cv }: { cv: Cv }) {
 
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <div className="inline-flex gap-0.5 rounded-[10px] bg-fill-secondary p-0.5">
-        {FORMATS.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            onClick={() => setFormat(f.id)}
-            aria-pressed={format === f.id}
-            className={`rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition ${
-              format === f.id
-                ? "bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.12)]"
-                : "text-text-secondary hover:text-foreground"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div
+        role="tablist"
+        aria-label="Export format"
+        onKeyDown={handleTablistKeyDown}
+        className="inline-flex gap-0.5 rounded-[10px] bg-fill-secondary p-0.5"
+      >
+        {FORMATS.map((f, i) => {
+          const selected = format === f.id;
+          return (
+            <button
+              key={f.id}
+              ref={(el) => {
+                tabRefs.current[i] = el;
+              }}
+              type="button"
+              role="tab"
+              id={`export-format-tab-${f.id}`}
+              aria-selected={selected}
+              tabIndex={selected ? 0 : -1}
+              onClick={() => setFormat(f.id)}
+              className={`rounded-[8px] px-3 py-1.5 text-[13px] font-medium transition ${
+                selected
+                  ? "bg-surface shadow-[0_1px_2px_rgba(0,0,0,0.12)]"
+                  : "text-text-secondary hover:text-foreground"
+              }`}
+            >
+              {f.label}
+            </button>
+          );
+        })}
       </div>
 
       <button
