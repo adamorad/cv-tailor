@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - A live Ollama-reachability check driving the sidebar's badge: it polls `GET /api/health` on mount, every 20s, and on window focus, and switches from "On-device" (green dot) to "Ollama unreachable" (red dot) when the local server can't be reached — purely informational, doesn't block Generate.
 - `app/error.tsx` and `app/not-found.tsx`, matching the app's existing design language, replacing Next.js's default fallback pages for uncaught render errors and unmatched routes.
 - A `.github/workflows/codeql.yml` running CodeQL static analysis (JavaScript/TypeScript) on every push and PR to `main`, plus a weekly schedule.
+- Playwright E2E coverage for the actual generate → preview → export flow (`e2e/generate-flow.spec.ts`): mocked `/api/generate` and `/api/export`, driven entirely through the rendered UI (the real "Paste text instead" toggle, model picker, Generate button), asserting the tailored preview renders, the run lands in the sidebar History panel, and a Word-format download fires. Plus `e2e/cover-letter-and-cancel.spec.ts` covering cover-letter generation and cancelling an in-flight CV generation back to idle.
 - `.editorconfig` pinning UTF-8, LF, a final newline, trimmed trailing whitespace, and 2-space indentation to match the repo's existing conventions.
 
 ### Changed
