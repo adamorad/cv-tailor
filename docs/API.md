@@ -166,9 +166,10 @@ The download filename is derived from `cv.name` via
 
 ## `GET /api/health`
 
-Reports whether the app can reach its local Ollama server. Not used by the
-UI — for scripting or monitoring (e.g. `curl localhost:3000/api/health`
-before automating a generation request).
+Reports whether the app can reach its local Ollama server. Polled by the
+sidebar's Ollama status badge (`app/page.tsx`) on mount, every 20s, and on
+window focus; also usable directly for scripting or monitoring (e.g.
+`curl localhost:3000/api/health` before automating a generation request).
 
 **Responses**
 
