@@ -1,4 +1,4 @@
-import type { Cv } from "./schema";
+import { cvSchema, type Cv } from "./schema";
 
 const DRAFT_KEY = "cv-tailor:draft";
 const HISTORY_KEY = "cv-tailor:history";
@@ -58,12 +58,26 @@ export function saveDraft(draft: Draft): void {
   safeSet(DRAFT_KEY, JSON.stringify(draft));
 }
 
+/** True if `entry` has the HistoryEntry shape and `entry.cv` is a valid Cv. */
+function isValidHistoryEntry(entry: unknown): entry is HistoryEntry {
+  if (typeof entry !== "object" || entry === null) return false;
+  const { id, createdAt, cv } = entry as Record<string, unknown>;
+  return (
+    typeof id === "string" &&
+    typeof createdAt === "number" &&
+    cvSchema.safeParse(cv).success
+  );
+}
+
 export function loadHistory(): HistoryEntry[] {
   const raw = safeGet(HISTORY_KEY);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    // Drop individually corrupt entries rather than discarding the whole
+    // list — a partially-corrupted history is better than losing it all.
+    return parsed.filter(isValidHistoryEntry);
   } catch {
     return [];
   }
