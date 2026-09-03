@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+
+- Unit tests for all six `app/api/*/route.ts` handlers (request validation, length guards, model-allowlist checks, malformed JSON, and success paths), colocated under `app/api/<route>/__tests__/route.test.ts`, plus a `vitest.config.mts` `@` alias so route files under test can resolve their real `@/lib/*` imports. Fixed leftover duplicated/incorrect rows in `docs/API.md`'s `POST /api/cover-letter` responses table and a stale "All four routes" intro line.
+
 ## [0.2.0] - 2026-09-02
 
 ### Added
