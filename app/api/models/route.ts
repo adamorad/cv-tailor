@@ -52,6 +52,7 @@ export async function POST(request: Request) {
   }
 
   const encoder = new TextEncoder();
+  const signal = request.signal;
   const stream = new ReadableStream({
     async start(controller) {
       try {
@@ -59,18 +60,26 @@ export async function POST(request: Request) {
           model: modelOption.id,
           stream: true,
         });
+        if (signal.aborted) progress.abort();
+        else
+          signal.addEventListener("abort", () => progress.abort(), {
+            once: true,
+          });
+
         for await (const chunk of progress) {
           controller.enqueue(encoder.encode(JSON.stringify(chunk) + "\n"));
         }
       } catch (err) {
-        controller.enqueue(
-          encoder.encode(
-            JSON.stringify({
-              status: "error",
-              error: friendlyOllamaError(err),
-            }) + "\n",
-          ),
-        );
+        if (!signal.aborted) {
+          controller.enqueue(
+            encoder.encode(
+              JSON.stringify({
+                status: "error",
+                error: friendlyOllamaError(err),
+              }) + "\n",
+            ),
+          );
+        }
       } finally {
         controller.close();
       }
@@ -80,4 +89,33 @@ export async function POST(request: Request) {
   return new Response(stream, {
     headers: { "Content-Type": "application/x-ndjson" },
   });
+}
+
+export async function DELETE(request: Request) {
+  let body: { model?: string };
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const { model } = body;
+  const modelOption = CURATED_MODELS.find((m) => m.id === model);
+  if (!modelOption) {
+    return Response.json({ error: "Unknown model" }, { status: 400 });
+  }
+
+  try {
+    await ollama.delete({ model: modelOption.id });
+    return Response.json({ status: "success" });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (/not found/i.test(message)) {
+      return Response.json(
+        { error: `${modelOption.label} isn't downloaded.` },
+        { status: 404 },
+      );
+    }
+    return Response.json({ error: friendlyOllamaError(err) }, { status: 502 });
+  }
 }

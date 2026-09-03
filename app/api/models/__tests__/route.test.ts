@@ -5,20 +5,20 @@ vi.mock("@/lib/diskSpace", () => ({
 }));
 
 vi.mock("@/lib/llm", () => ({
-  ollama: { list: vi.fn(), pull: vi.fn() },
+  ollama: { list: vi.fn(), pull: vi.fn(), delete: vi.fn() },
   friendlyOllamaError: vi.fn(() => "friendly error"),
 }));
 
 import { ollama } from "@/lib/llm";
 import { CURATED_MODELS } from "@/lib/models";
 import { getAvailableBytes } from "@/lib/diskSpace";
-import { GET, POST } from "../route";
+import { GET, POST, DELETE } from "../route";
 
 const PLENTY_OF_SPACE = 100 * 1024 ** 3;
 
-function makeRequest(body: unknown): Request {
+function makeRequest(body: unknown, method = "POST"): Request {
   return new Request("http://localhost/api/models", {
-    method: "POST",
+    method,
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
 }
@@ -99,6 +99,79 @@ describe("POST /api/models", () => {
       status: "error",
       error: "friendly error",
     });
+  });
+});
+
+describe("POST /api/models — cancellation", () => {
+  it("aborts the ollama pull when the request signal fires", async () => {
+    vi.mocked(getAvailableBytes).mockResolvedValueOnce(PLENTY_OF_SPACE);
+    const abort = vi.fn();
+    const controller = new AbortController();
+
+    async function* progress() {
+      yield { status: "pulling manifest" };
+      controller.abort();
+    }
+    const iterator = progress() as unknown as Awaited<
+      ReturnType<typeof ollama.pull>
+    >;
+    Object.assign(iterator, { abort });
+    vi.mocked(ollama.pull).mockResolvedValueOnce(iterator);
+
+    const request = new Request("http://localhost/api/models", {
+      method: "POST",
+      body: JSON.stringify({ model: CURATED_MODELS[0].id }),
+      signal: controller.signal,
+    });
+    const res = await POST(request);
+    await res.text();
+
+    expect(abort).toHaveBeenCalled();
+  });
+});
+
+describe("DELETE /api/models", () => {
+  it("rejects invalid JSON body", async () => {
+    const res = await DELETE(makeRequest("not json", "DELETE"));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "Invalid JSON body" });
+  });
+
+  it("rejects an unknown model", async () => {
+    const res = await DELETE(makeRequest({ model: "not-a-model" }, "DELETE"));
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: "Unknown model" });
+  });
+
+  it("deletes a downloaded model", async () => {
+    vi.mocked(ollama.delete).mockResolvedValueOnce({ status: "success" });
+    const res = await DELETE(
+      makeRequest({ model: CURATED_MODELS[0].id }, "DELETE"),
+    );
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ status: "success" });
+    expect(ollama.delete).toHaveBeenCalledWith({ model: CURATED_MODELS[0].id });
+  });
+
+  it("returns 404 when ollama reports the model isn't installed", async () => {
+    vi.mocked(ollama.delete).mockRejectedValueOnce(
+      new Error(`model '${CURATED_MODELS[0].id}' not found`),
+    );
+    const res = await DELETE(
+      makeRequest({ model: CURATED_MODELS[0].id }, "DELETE"),
+    );
+    expect(res.status).toBe(404);
+    const data = await res.json();
+    expect(data.error).toMatch(/isn't downloaded/i);
+  });
+
+  it("returns 502 on other delete failures", async () => {
+    vi.mocked(ollama.delete).mockRejectedValueOnce(new Error("boom"));
+    const res = await DELETE(
+      makeRequest({ model: CURATED_MODELS[0].id }, "DELETE"),
+    );
+    expect(res.status).toBe(502);
+    expect(await res.json()).toEqual({ error: "friendly error" });
   });
 });
 

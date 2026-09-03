@@ -114,6 +114,33 @@ JSON object, either:
   }
   ```
 
+If the client disconnects (e.g. the user cancels the download), the request's
+`signal` fires and the underlying `ollama.pull()` stream is aborted
+server-side — the pull actually stops instead of continuing unseen. This
+doesn't change the response shape above.
+
+## `DELETE /api/models`
+
+Deletes a curated model from Ollama's local store.
+
+**Request body**
+
+```ts
+{
+  model: string;
+}
+```
+
+**Responses**
+
+| Status | Body                                     | When                                                                               |
+| ------ | ---------------------------------------- | ---------------------------------------------------------------------------------- |
+| 400    | `{ error: "Invalid JSON body" }`         | body isn't valid JSON                                                              |
+| 400    | `{ error: "Unknown model" }`             | `model` isn't in the curated allowlist                                             |
+| 404    | `{ error: "<label> isn't downloaded." }` | Ollama reports the model isn't installed                                           |
+| 502    | `{ error: string }`                      | Ollama unreachable, or another delete failure (message from `friendlyOllamaError`) |
+| 200    | `{ status: "success" }`                  | model deleted                                                                      |
+
 ## `POST /api/parse-file`
 
 Extracts plain text from an uploaded PDF or DOCX, entirely locally
