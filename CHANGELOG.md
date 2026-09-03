@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - A Cancel button during CV and cover letter generation. Cancelling aborts the in-progress Ollama stream server-side (not just the client-side fetch), so the model actually stops generating instead of finishing unseen.
 - A disk-space check before pulling a model in `POST /api/models`: rejects with a 400 (before the download stream starts) if free space is under the model's `sizeGb` plus a 1GB safety margin, instead of starting a multi-gigabyte download that could fill the disk.
 - Unit tests for all six `app/api/*/route.ts` handlers (request validation, length guards, model-allowlist checks, malformed JSON, and success paths), colocated under `app/api/<route>/__tests__/route.test.ts`, plus a `vitest.config.mts` `@` alias so route files under test can resolve their real `@/lib/*` imports. Fixed leftover duplicated/incorrect rows in `docs/API.md`'s `POST /api/cover-letter` responses table and a stale "All four routes" intro line.
+- `app/error.tsx` and `app/not-found.tsx`, matching the app's existing design language, replacing Next.js's default fallback pages for uncaught render errors and unmatched routes.
 - A `.github/workflows/codeql.yml` running CodeQL static analysis (JavaScript/TypeScript) on every push and PR to `main`, plus a weekly schedule.
 
 ## [0.2.0] - 2026-09-02
