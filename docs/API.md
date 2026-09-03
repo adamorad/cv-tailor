@@ -175,3 +175,40 @@ before automating a generation request).
 | ------ | ------------------------------------------------------------------- | --------------------- |
 | 200    | `{ status: "ok", ollama: "reachable" }`                             | Ollama responded      |
 | 503    | `{ status: "degraded", ollama: "unreachable", error: "<message>" }` | Ollama didn't respond |
+
+## `POST /api/cover-letter`
+
+Runs one LLM call ([`generateCoverLetter`](../lib/coverLetter.ts)) that
+produces a plain-text cover letter grounded only in the given `Cv` object and
+job description — no separate generation of new facts.
+
+**Request body**
+
+```ts
+{
+  cv: Cv;
+  jobDescription: string;
+  model: string;
+}
+```
+
+`cv` is validated against `cvSchema`. `jobDescription` is capped at 50,000
+characters. `model` must be one of the ids in `CURATED_MODELS`
+(`lib/models.ts`).
+
+**Responses**
+
+| Status | Body                                                          | When                                                    |
+| ------ | ------------------------------------------------------------- | ------------------------------------------------------- |
+| 200    | `{ letter: string }`                                          | success                                                 |
+| 400    | `{ error: "Invalid JSON body" }`                              | body isn't valid JSON                                   |
+| 400    | `{ error: "Invalid CV payload" }`                             | `cv` fails `cvSchema` validation                        |
+| 400    | `{ error: "jobDescription and model are required" }`          | a required field is missing                             |
+| 400    | `{ error: "jobDescription must be under 50000 characters" }`  | length guard tripped                                    |
+| 400    | `{ error: "Unknown model" }`                                  | `model` isn't in the curated allowlist                  |
+| 502    | `{ error: string }`                                           | Ollama unreachable (message from `friendlyOllamaError`) |
+| 400    | `{ error: "cv, jobDescription, and model are all required" }` | a required field is missing                             |
+| 400    | `{ error: "jobDescription must be under 50000 characters" }`  | length guard tripped                                    |
+| 400    | `{ error: "Invalid CV payload" }`                             | `cv` fails `cvSchema` validation                        |
+| 400    | `{ error: "Unknown model" }`                                  | `model` isn't in the curated allowlist                  |
+| 502    | `{ error: string }`                                           | Ollama unreachable (message from `friendlyOllamaError`) |
