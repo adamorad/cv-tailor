@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import type { ModelOption } from "@/lib/models";
 
 type ModelStatus = ModelOption & { downloaded: boolean };
@@ -80,7 +80,11 @@ function StatusBadge({
   );
 }
 
-export function ModelPicker({
+// Model list rarely changes and re-rendering it (grid of cards with SVG
+// status indicators) has a real, measurable cost — memoize so unrelated
+// state changes elsewhere on the page (CV/JD text edits, the on-device
+// health-check poll) don't force it to re-render.
+function ModelPickerComponent({
   selected,
   onSelect,
 }: {
@@ -267,3 +271,5 @@ export function ModelPicker({
     </div>
   );
 }
+
+export const ModelPicker = memo(ModelPickerComponent);

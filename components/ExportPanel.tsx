@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import type { Cv } from "@/lib/schema";
 import { sanitizeFilenameBase } from "@/lib/filename";
 import { toMarkdown } from "@/lib/render/toMarkdown";
@@ -26,7 +26,10 @@ function downloadBlob(blob: Blob, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-export function ExportPanel({ cv }: { cv: Cv }) {
+// `cv` is stable except when a new CV is generated or a history entry is
+// selected — memoize alongside CvPreview so unrelated CV/JD text edits
+// don't re-render it too.
+function ExportPanelComponent({ cv }: { cv: Cv }) {
   const [format, setFormat] = useState<Format>("md");
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -154,3 +157,5 @@ export function ExportPanel({ cv }: { cv: Cv }) {
     </div>
   );
 }
+
+export const ExportPanel = memo(ExportPanelComponent);
