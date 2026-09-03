@@ -6,8 +6,16 @@ vi.mock("@/lib/llm", () => ({
   GenerationAbortedError: class GenerationAbortedError extends Error {},
   GenerationTimeoutError: class GenerationTimeoutError extends Error {},
 }));
+vi.mock("@/lib/concurrencyGuard", () => ({
+  withGenerationLock: vi.fn((fn: () => Promise<unknown>) => fn()),
+  GenerationInProgressError: class GenerationInProgressError extends Error {},
+}));
 
 import { generateTailoredCv, GenerationTimeoutError } from "@/lib/llm";
+import {
+  withGenerationLock,
+  GenerationInProgressError,
+} from "@/lib/concurrencyGuard";
 import { POST } from "../route";
 
 function makeRequest(body: unknown): Request {
@@ -82,6 +90,19 @@ describe("POST /api/generate", () => {
     );
     expect(res.status).toBe(504);
     expect(await res.json()).toEqual({ error: timeoutError.message });
+  });
+
+  it("returns 409 when a generation is already in progress", async () => {
+    vi.mocked(withGenerationLock).mockRejectedValueOnce(
+      new GenerationInProgressError(),
+    );
+    const res = await POST(
+      makeRequest({ cvText: "cv", jobDescription: "jd", model: "qwen2.5:3b" }),
+    );
+    expect(res.status).toBe(409);
+    expect(await res.json()).toEqual({
+      error: new GenerationInProgressError().message,
+    });
   });
 
   it("returns the generated cv on success", async () => {
