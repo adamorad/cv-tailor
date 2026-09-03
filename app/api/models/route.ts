@@ -1,5 +1,11 @@
+import { tmpdir } from "node:os";
 import { ollama, friendlyOllamaError } from "@/lib/llm";
 import { CURATED_MODELS } from "@/lib/models";
+import { getAvailableBytes } from "@/lib/diskSpace";
+
+const GB = 1024 ** 3;
+// sizeGb is approximate and Ollama needs temp/working space during extraction.
+const PULL_SAFETY_MARGIN_GB = 1;
 
 export async function GET() {
   try {
@@ -24,15 +30,35 @@ export async function POST(request: Request) {
   }
 
   const { model } = body;
-  if (!model || !CURATED_MODELS.some((m) => m.id === model)) {
+  const modelOption = CURATED_MODELS.find((m) => m.id === model);
+  if (!modelOption) {
     return Response.json({ error: "Unknown model" }, { status: 400 });
+  }
+
+  try {
+    const requiredBytes = (modelOption.sizeGb + PULL_SAFETY_MARGIN_GB) * GB;
+    const availableBytes = await getAvailableBytes(tmpdir());
+    if (availableBytes < requiredBytes) {
+      const availableGb = (availableBytes / GB).toFixed(1);
+      return Response.json(
+        {
+          error: `Not enough disk space to download ${modelOption.label} (~${modelOption.sizeGb}GB needed, ~${availableGb}GB free).`,
+        },
+        { status: 400 },
+      );
+    }
+  } catch {
+    // Disk space check is best-effort; don't block a pull if it fails.
   }
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        const progress = await ollama.pull({ model, stream: true });
+        const progress = await ollama.pull({
+          model: modelOption.id,
+          stream: true,
+        });
         for await (const chunk of progress) {
           controller.enqueue(encoder.encode(JSON.stringify(chunk) + "\n"));
         }
