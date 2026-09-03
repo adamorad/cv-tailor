@@ -57,6 +57,20 @@ Yes — `ollama pull` any model you want, then add an entry for it to the `CURAT
 
 ## Getting started
 
+### macOS via Homebrew
+
+```bash
+brew tap adamorad/cv-tailor
+brew install cv-tailor
+cv-tailor
+```
+
+`cv-tailor` starts the app in the background (if it isn't already running)
+and opens it in your default browser. Ollama is a separate dependency —
+`brew install ollama && ollama serve` if you don't already have it running.
+
+### From source
+
 ```bash
 npm install
 npm run dev
