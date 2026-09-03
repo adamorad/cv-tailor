@@ -17,6 +17,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - A live Ollama-reachability check driving the sidebar's badge: it polls `GET /api/health` on mount, every 20s, and on window focus, and switches from "On-device" (green dot) to "Ollama unreachable" (red dot) when the local server can't be reached — purely informational, doesn't block Generate.
 - `app/error.tsx` and `app/not-found.tsx`, matching the app's existing design language, replacing Next.js's default fallback pages for uncaught render errors and unmatched routes.
 - A `.github/workflows/codeql.yml` running CodeQL static analysis (JavaScript/TypeScript) on every push and PR to `main`, plus a weekly schedule.
+- Playwright E2E coverage for the actual generate → preview → export flow (`e2e/generate-flow.spec.ts`): mocked `/api/generate` and `/api/export`, driven entirely through the rendered UI (the real "Paste text instead" toggle, model picker, Generate button), asserting the tailored preview renders, the run lands in the sidebar History panel, and a Word-format download fires. Plus `e2e/cover-letter-and-cancel.spec.ts` covering cover-letter generation and cancelling an in-flight CV generation back to idle.
+- `.editorconfig` pinning UTF-8, LF, a final newline, trimmed trailing whitespace, and 2-space indentation to match the repo's existing conventions.
+- Edge-case coverage for all five `lib/render/*` renderers: empty optional sections (no skills/experience/certifications), a bare-minimum Cv (only a name, everything else empty), very long content (a long single bullet, a multi-paragraph summary), unicode (CJK, Arabic, Hebrew, emoji), and format-specific special characters (markdown-significant characters in `toMarkdown`, HTML-significant characters in ordinary — not just link — fields in `toHtml`). The `toDocx`/`toPdf` unicode and long-content tests round-trip the generated buffer back to text via `mammoth`/`unpdf` (already app dependencies) to assert content actually survived, not just that generation didn't throw.
+
+### Fixed
+
+- `toPdfBuffer` mutated its input `Cv` in place: `job.bullets` and `cv.certifications` arrays were passed directly to pdfmake's `ul` content field, and pdfmake rewrites each array element in place during PDF layout, replacing the original bullet/certification strings with pdfmake's internal layout objects. Any caller holding onto the same `Cv` object after calling `toPdfBuffer` (e.g. exporting to another format afterward, or a test asserting on the object post-export) would see corrupted data. Fixed by passing a shallow copy (`[...job.bullets]`, `[...cv.certifications]`) instead of the original array reference. Caught by a new `toPdfBuffer` edge-case test that read a fixture's bullet text back after export.
+
+### Changed
+
+- CI's `npm audit` step now fails the build on a `critical`-severity vulnerability (previously report-only via `continue-on-error`); high/moderate/low still just report, since there's no triage process for those yet.
 
 ## [0.2.0] - 2026-09-02
 

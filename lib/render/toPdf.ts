@@ -47,7 +47,9 @@ export async function toPdfBuffer(cv: Cv): Promise<Buffer> {
       if (job.dates)
         content.push({ text: job.dates, italics: true, color: "#555555" });
       if (job.bullets.length) {
-        content.push({ ul: job.bullets, margin: [0, 2, 0, 4] });
+        // Copy: pdfmake mutates `ul` array elements in place during layout,
+        // which would otherwise corrupt the caller's Cv object.
+        content.push({ ul: [...job.bullets], margin: [0, 2, 0, 4] });
       }
     }
   }
@@ -65,7 +67,9 @@ export async function toPdfBuffer(cv: Cv): Promise<Buffer> {
 
   if (cv.certifications.length) {
     content.push({ text: "Certifications", style: "sectionHeading" });
-    content.push({ ul: cv.certifications });
+    // Copy: pdfmake mutates `ul` array elements in place during layout,
+    // which would otherwise corrupt the caller's Cv object.
+    content.push({ ul: [...cv.certifications] });
   }
 
   const doc = pdfMake.createPdf(
