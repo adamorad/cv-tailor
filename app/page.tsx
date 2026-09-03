@@ -273,6 +273,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handleCancel}
+                aria-label="Cancel CV generation"
                 className="mt-3 rounded-full bg-fill-secondary hover:bg-black/10 dark:hover:bg-white/15 px-4 py-1.5 text-[13px] font-medium text-text-secondary transition"
               >
                 Cancel

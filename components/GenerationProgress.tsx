@@ -38,7 +38,7 @@ export function GenerationProgress({ active }: { active: boolean }) {
       aria-label="Generating your tailored CV"
     >
       <div
-        className="h-full rounded-full bg-accent"
+        className="h-full rounded-full bg-accent progress-fill"
         style={{ width: `${progress}%`, transition: "width 0.2s linear" }}
       />
     </div>
