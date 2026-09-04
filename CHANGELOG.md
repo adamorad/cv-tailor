@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- `README.md` and its screenshots brought current with everything shipped since the last refresh: cover letter generation, session restore/CV history, the Cancel button, model pull cancel/delete with a pre-pull disk-space check, and the "Clear all local data" action. Added a new cover-letter screenshot and re-captured the other three against the current UI.
+
 ### Added
 
 - A scoped ESLint guardrail on `lib/render/**/*.ts` (the five CV export renderers) and `lib/schema.ts` (the single source-of-truth `Cv` Zod schema), the app's most type-correctness-critical code: `@typescript-eslint/no-non-null-assertion`, `@typescript-eslint/no-unsafe-assignment`, `@typescript-eslint/no-unsafe-member-access`, and `@typescript-eslint/no-unsafe-return`, all set to `"error"` via a new `eslint.config.mjs` override with `parserOptions.projectService` enabled for that file scope (type-aware linting, needed for the `no-unsafe-*` rules). `@typescript-eslint/no-explicit-any` was already `"error"` repo-wide via `eslint-config-next`'s base `typescript-eslint` `recommended` config, so it wasn't re-added. Confirmed the guardrail actually fires (deliberate `any`/unsafe-access/non-null-assertion in a scratch edit, reverted before committing) rather than just parsing.

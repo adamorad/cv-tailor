@@ -4,7 +4,7 @@
 
 A localhost app that tailors your CV to a job description — entirely on your own machine, using a local model through [Ollama](https://ollama.com). No API key, no cloud, nothing leaves your computer.
 
-Paste or upload (PDF/DOCX) your CV and a job description, pick a local model, and get back a tailored CV you can export as Markdown, plain text, HTML, Word (.docx), or PDF.
+Paste or upload (PDF/DOCX) your CV and a job description, pick a local model, and get back a tailored CV you can export as Markdown, plain text, HTML, Word (.docx), or PDF — plus a matching cover letter, grounded only in what's actually in your CV. Your draft and past results are saved locally so you can pick up where you left off, and every generation can be cancelled mid-run.
 
 ## Screenshots
 
@@ -14,23 +14,30 @@ Paste or upload (PDF/DOCX) your CV and a job description, pick a local model, an
 **Pick a local model — only the one you choose gets downloaded**
 ![Model picker](./docs/screenshots/model-picker.jpg)
 
-**Get a tailored preview, ready to export**
+**Get a tailored preview, ready to export, with your past runs saved in the sidebar**
 ![Generated CV preview](./docs/screenshots/preview.jpg)
+
+**Generate a matching cover letter, editable and ready to copy or download**
+![Cover letter panel](./docs/screenshots/cover-letter.jpg)
 
 ## How it works
 
 1. **Extraction** — uploaded PDF/DOCX files are converted to plain text locally (`unpdf`, `mammoth`).
-2. **Generation** — a single call to your local Ollama model returns one structured JSON representation of the CV (name, summary, skills, experience, education, ...), constrained by a JSON schema. The model reorders and rewrites your existing skills/summary/bullets to match the job description — it's instructed not to invent experience you don't have.
+2. **Generation** — a single call to your local Ollama model returns one structured JSON representation of the CV (name, summary, skills, experience, education, ...), constrained by a JSON schema. The model reorders and rewrites your existing skills/summary/bullets to match the job description — it's instructed not to invent experience you don't have. The cover letter is the same idea as plain text: one call, grounded only in the CV JSON and the job description, no new facts invented.
 3. **Export** — all five output formats are rendered deterministically from that one JSON object, so they never drift from each other.
 
-There's no agent loop, no tool-calling, no multi-step pipeline — just one prompt-in/JSON-out call per generation.
+There's no agent loop, no tool-calling, no multi-step pipeline — just one prompt-in/JSON-out call per generation. Every generation can be cancelled mid-run, and gives up on its own after a few minutes if Ollama stops responding, instead of hanging forever.
+
+### Your data, saved locally
+
+Your CV/job-description draft and the last 20 generated CVs are saved in your browser's `localStorage` — nothing server-side, nothing synced anywhere. Reopen the app and your draft and history are still there; click a past entry in the sidebar to bring it back into the preview. A "Clear all local data" link at the bottom of the sidebar wipes both in one click, useful before handing the machine to someone else.
 
 ## Requirements
 
 - Node.js 20+
 - [Ollama](https://ollama.com) installed and running (`ollama serve`)
 
-You don't need to pre-pull a model — the model picker in the UI lists a few curated, small-footprint options (Qwen 2.5 1.5B/3B/7B, Llama 3.2 3B — 1GB to 4.7GB) and downloads whichever one you pick, with a progress indicator, the first time you select it.
+You don't need to pre-pull a model — the model picker in the UI lists a few curated, small-footprint options (Qwen 2.5 1.5B/3B/7B, Llama 3.2 3B — 1GB to 4.7GB) and downloads whichever one you pick, with a progress indicator, the first time you select it. A download can be cancelled mid-pull, and a downloaded model can be removed from the picker directly (no need to drop to a terminal for `ollama rm`) — the app also checks you have enough free disk space before starting a pull, rather than starting a multi-gigabyte download that could fill your disk.
 
 ### Choosing a model
 
@@ -146,7 +153,10 @@ rm -rf ~/Library/Application\ Support/Ollama
 Ollama isn't running, or isn't reachable on the port the app expects (`localhost:11434`). Start it with `ollama serve` (or launch the Ollama app) and try again.
 
 **A model pull or generation seems stuck**
-The first generation with a given model includes a cold load into memory, which can take a while — especially for larger models (7B) or slower hardware (Intel Macs, weaker GPUs). Give it a minute or two before assuming it's hung; subsequent generations with the same model are faster since it stays loaded.
+The first generation with a given model includes a cold load into memory, which can take a while — especially for larger models (7B) or slower hardware (Intel Macs, weaker GPUs). Give it a minute or two before assuming it's hung; subsequent generations with the same model are faster since it stays loaded. If it's truly stuck, click Cancel — generation also times out on its own (4 minutes for a CV, 2 for a cover letter) if Ollama stops responding entirely.
+
+**"Another generation is already in progress" error**
+Only one generation runs at a time, even across browser tabs — this app talks to a single local Ollama instance, and two generations running at once would just slow each other down. Wait for the first to finish, or cancel it, then try again.
 
 **"Unknown model" error**
 The app's curated model list and Ollama's installed models can get out of sync (e.g. you removed a model with `ollama rm` in another terminal). Refresh the page to re-sync the picker with what's actually installed.
