@@ -53,7 +53,7 @@ function StatusBadge({
 
   if (selected) {
     return (
-      <span className="flex items-center justify-center w-[22px] h-[22px] rounded-full bg-accent text-white shrink-0">
+      <span className="flex items-center justify-center w-[22px] h-[22px] rounded-full bg-accent text-accent-ink shrink-0">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
           <path
             d="M20 6 9 17l-5-5"

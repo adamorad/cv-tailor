@@ -1,10 +1,18 @@
 import { contactParts, type Cv } from "@/lib/schema";
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-[13px] font-semibold text-text-secondary uppercase tracking-wide mb-2">
+    <h3 className="text-[12px] font-bold text-accent uppercase tracking-wide border-b border-accent/25 pb-1 mb-2.5">
       {children}
     </h3>
+  );
+}
+
+function DateRight({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[12px] text-text-secondary shrink-0 whitespace-nowrap">
+      {children}
+    </p>
   );
 }
 
@@ -12,33 +20,41 @@ export function CvPreview({ cv }: { cv: Cv }) {
   const contactLine = contactParts(cv).join("  ·  ");
 
   return (
-    <div className="flex flex-col gap-7 text-[15px] leading-relaxed">
+    <div className="flex flex-col gap-4 text-[13px] leading-snug">
       <div>
-        <h2 className="text-[28px] font-semibold tracking-tight">{cv.name}</h2>
-        {cv.title && <p className="text-text-secondary mt-0.5">{cv.title}</p>}
+        <h2 className="text-[26px] font-bold tracking-tight">{cv.name}</h2>
+        {cv.title && (
+          <p className="text-[13.5px] font-semibold text-text-secondary mt-1">
+            {cv.title}
+          </p>
+        )}
         {contactLine && (
-          <p className="text-[13px] text-text-secondary mt-2">{contactLine}</p>
+          <p className="text-[12px] text-text-secondary mt-1">
+            {contactLine}
+          </p>
         )}
       </div>
 
       {cv.summary && (
         <section>
-          <SectionLabel>Summary</SectionLabel>
+          <SectionHeading>Summary</SectionHeading>
           <p>{cv.summary}</p>
         </section>
       )}
 
-      {cv.skills.length > 0 && (
+      {cv.skillGroups.length > 0 && (
         <section>
-          <SectionLabel>Skills</SectionLabel>
-          <div className="flex flex-wrap gap-1.5">
-            {cv.skills.map((skill, i) => (
-              <span
-                key={i}
-                className="rounded-full bg-fill-secondary px-2.5 py-1 text-[13px]"
-              >
-                {skill}
-              </span>
+          <SectionHeading>Core skills</SectionHeading>
+          <div className="flex flex-col gap-1">
+            {cv.skillGroups.map((group, i) => (
+              <div key={i} className="flex gap-3">
+                <p className="w-[168px] shrink-0 font-semibold">
+                  {group.label}
+                </p>
+                <p className="text-text-secondary">
+                  {group.items.join(" · ")}
+                </p>
+              </div>
             ))}
           </div>
         </section>
@@ -46,26 +62,28 @@ export function CvPreview({ cv }: { cv: Cv }) {
 
       {cv.experience.length > 0 && (
         <section>
-          <SectionLabel>Experience</SectionLabel>
-          <div className="flex flex-col gap-5">
+          <SectionHeading>Experience</SectionHeading>
+          <div className="flex flex-col gap-3">
             {cv.experience.map((job, i) => (
               <div key={i}>
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="font-medium">
-                    {job.role}{" "}
-                    <span className="text-text-secondary">— {job.company}</span>
+                  <p className="font-semibold">
+                    {job.role} — {job.company}
                   </p>
-                  {job.dates && (
-                    <p className="text-[13px] text-text-secondary shrink-0">
-                      {job.dates}
-                    </p>
-                  )}
+                  {job.dates && <DateRight>{job.dates}</DateRight>}
                 </div>
-                <ul className="mt-1.5 list-disc list-outside ml-4 space-y-1 text-text-secondary marker:text-hairline">
-                  {job.bullets.map((b, j) => (
-                    <li key={j}>{b}</li>
-                  ))}
-                </ul>
+                {job.location && (
+                  <p className="text-[12px] italic text-text-secondary">
+                    {job.location}
+                  </p>
+                )}
+                {job.bullets.length > 0 && (
+                  <ul className="mt-1 list-disc list-outside ml-4 space-y-0.5 text-text-secondary marker:text-hairline">
+                    {job.bullets.map((b, j) => (
+                      <li key={j}>{b}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
             ))}
           </div>
@@ -74,29 +92,27 @@ export function CvPreview({ cv }: { cv: Cv }) {
 
       {cv.education.length > 0 && (
         <section>
-          <SectionLabel>Education</SectionLabel>
-          <ul className="space-y-1">
+          <SectionHeading>Education</SectionHeading>
+          <div className="flex flex-col gap-0.5">
             {cv.education.map((edu, i) => (
-              <li key={i}>
-                <span className="font-medium">{edu.degree}</span>
-                <span className="text-text-secondary">
-                  , {edu.school}
-                  {edu.dates && ` (${edu.dates})`}
-                </span>
-              </li>
+              <div key={i} className="flex items-baseline justify-between gap-3">
+                <p>
+                  <span className="font-medium">{edu.degree}</span>
+                  {edu.school && `, ${edu.school}`}
+                </p>
+                {edu.dates && <DateRight>{edu.dates}</DateRight>}
+              </div>
             ))}
-          </ul>
+          </div>
         </section>
       )}
 
       {cv.certifications.length > 0 && (
         <section>
-          <SectionLabel>Certifications</SectionLabel>
-          <ul className="list-disc list-outside ml-4 space-y-1 text-text-secondary">
-            {cv.certifications.map((c, i) => (
-              <li key={i}>{c}</li>
-            ))}
-          </ul>
+          <SectionHeading>Certifications</SectionHeading>
+          <p className="text-text-secondary">
+            {cv.certifications.join("  ·  ")}
+          </p>
         </section>
       )}
     </div>

@@ -13,8 +13,11 @@ export function toText(cv: Cv): string {
     lines.push("", "SUMMARY", cv.summary);
   }
 
-  if (cv.skills.length) {
-    lines.push("", "SKILLS", cv.skills.join(", "));
+  if (cv.skillGroups.length) {
+    lines.push("", "CORE SKILLS");
+    for (const group of cv.skillGroups) {
+      lines.push(`${group.label}: ${group.items.join(" · ")}`);
+    }
   }
 
   if (cv.experience.length) {
@@ -23,6 +26,7 @@ export function toText(cv: Cv): string {
       lines.push(
         `${job.role} - ${job.company}${job.dates ? ` (${job.dates})` : ""}`,
       );
+      if (job.location) lines.push(job.location);
       for (const bullet of job.bullets) lines.push(`  * ${bullet}`);
       lines.push("");
     }
@@ -37,8 +41,7 @@ export function toText(cv: Cv): string {
   }
 
   if (cv.certifications.length) {
-    lines.push("", "CERTIFICATIONS");
-    for (const cert of cv.certifications) lines.push(`  * ${cert}`);
+    lines.push("", "CERTIFICATIONS", cv.certifications.join(" · "));
   }
 
   return lines.join("\n");

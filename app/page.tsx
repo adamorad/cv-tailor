@@ -7,6 +7,7 @@ import { ModelPicker } from "@/components/ModelPicker";
 import { CvPreview } from "@/components/CvPreview";
 import { CvSkeleton } from "@/components/CvSkeleton";
 import { ExportPanel } from "@/components/ExportPanel";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function Home() {
   const [cvText, setCvText] = useState("");
@@ -42,24 +43,43 @@ export default function Home() {
     <>
       <header className="sticky top-0 z-10 border-b border-hairline bg-background/70 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-6 h-[52px] flex items-center justify-between">
-          <span className="text-[15px] font-semibold tracking-tight">
-            CV Tailor
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="block h-[18px] w-[18px] bg-foreground"
+              style={{
+                WebkitMaskImage: "url(/logo-icon.png)",
+                maskImage: "url(/logo-icon.png)",
+                WebkitMaskSize: "contain",
+                maskSize: "contain",
+                WebkitMaskRepeat: "no-repeat",
+                maskRepeat: "no-repeat",
+                WebkitMaskPosition: "center",
+                maskPosition: "center",
+              }}
+            />
+            <span className="text-[15px] font-semibold tracking-tight">
+              CV Tailor
+            </span>
           </span>
-          <span className="flex items-center gap-1.5 rounded-full bg-fill-secondary px-3 py-1 text-[12px] font-medium text-text-secondary">
-            <svg
-              width="11"
-              height="11"
-              viewBox="0 0 24 24"
-              fill="none"
-              className="text-success"
-            >
-              <path
-                d="M12 2 4 5v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V5l-8-3Z"
-                fill="currentColor"
-              />
-            </svg>
-            On-device
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5 rounded-full bg-fill-secondary px-3 py-1 text-[12px] font-medium text-text-secondary">
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="text-success"
+              >
+                <path
+                  d="M12 2 4 5v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V5l-8-3Z"
+                  fill="currentColor"
+                />
+              </svg>
+              On-device
+            </span>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
@@ -101,7 +121,7 @@ export default function Home() {
             type="button"
             onClick={handleGenerate}
             disabled={!canGenerate}
-            className="rounded-full bg-accent hover:bg-accent-hover active:bg-accent-active active:scale-[0.97] text-white px-6 py-3 text-[15px] font-medium transition disabled:opacity-40 disabled:pointer-events-none"
+            className="rounded-full bg-accent hover:bg-accent-hover active:bg-accent-active active:scale-[0.97] text-accent-ink px-6 py-3 text-[15px] font-medium transition disabled:opacity-40 disabled:pointer-events-none"
           >
             {generating ? "Generating…" : "Generate tailored CV"}
           </button>

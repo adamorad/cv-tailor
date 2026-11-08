@@ -19,8 +19,15 @@ export function toHtml(cv: Cv): string {
     )
     .join(" &middot; ");
 
-  const skills = cv.skills.length
-    ? `<section><h2>Skills</h2><p>${cv.skills.map(esc).join(", ")}</p></section>`
+  const skills = cv.skillGroups.length
+    ? `<section><h2>Core Skills</h2><table class="skills">${cv.skillGroups
+        .map(
+          (g) =>
+            `<tr><td class="label">${esc(g.label)}</td><td>${g.items
+              .map(esc)
+              .join(" &middot; ")}</td></tr>`,
+        )
+        .join("")}</table></section>`
     : "";
 
   const experience = cv.experience.length
@@ -28,8 +35,11 @@ export function toHtml(cv: Cv): string {
         .map(
           (job) => `
       <article>
-        <h3>${esc(job.role)} &mdash; ${esc(job.company)}</h3>
-        ${job.dates ? `<p class="dates">${esc(job.dates)}</p>` : ""}
+        <div class="row">
+          <h3>${esc(job.role)} &mdash; ${esc(job.company)}</h3>
+          ${job.dates ? `<span class="dates">${esc(job.dates)}</span>` : ""}
+        </div>
+        ${job.location ? `<p class="location">${esc(job.location)}</p>` : ""}
         <ul>${job.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
       </article>`,
         )
@@ -37,20 +47,19 @@ export function toHtml(cv: Cv): string {
     : "";
 
   const education = cv.education.length
-    ? `<section><h2>Education</h2><ul>${cv.education
+    ? `<section><h2>Education</h2>${cv.education
         .map(
-          (edu) =>
-            `<li><strong>${esc(edu.degree)}</strong>, ${esc(edu.school)}${
-              edu.dates ? ` (${esc(edu.dates)})` : ""
-            }</li>`,
+          (edu) => `
+      <div class="row">
+        <p><strong>${esc(edu.degree)}</strong>${edu.school ? `, ${esc(edu.school)}` : ""}</p>
+        ${edu.dates ? `<span class="dates">${esc(edu.dates)}</span>` : ""}
+      </div>`,
         )
-        .join("")}</ul></section>`
+        .join("")}</section>`
     : "";
 
   const certifications = cv.certifications.length
-    ? `<section><h2>Certifications</h2><ul>${cv.certifications
-        .map((c) => `<li>${esc(c)}</li>`)
-        .join("")}</ul></section>`
+    ? `<section><h2>Certifications</h2><p>${cv.certifications.map(esc).join(" &middot; ")}</p></section>`
     : "";
 
   return `<!doctype html>
@@ -59,16 +68,32 @@ export function toHtml(cv: Cv): string {
 <meta charset="utf-8" />
 <title>${esc(cv.name)}${cv.title ? ` — ${esc(cv.title)}` : ""}</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; line-height: 1.5; }
-  h1 { margin-bottom: 0.1rem; }
-  h2 { border-bottom: 1px solid #ccc; padding-bottom: 0.2rem; margin-top: 2rem; }
-  .dates { color: #666; font-style: italic; margin: 0.1rem 0 0.4rem; }
-  .contact { color: #444; margin-top: 0.2rem; }
+  @page { size: letter; margin: 0.55in; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #1a1a1a; line-height: 1.35; font-size: 13px; }
+  h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.01em; }
+  h2 { border-bottom: 1px solid #b9cfe0; color: #155ea6; text-transform: uppercase; letter-spacing: 0.03em; font-size: 12px; padding-bottom: 0.25rem; margin: 1.1rem 0 0.5rem; }
+  h3 { margin: 0; font-size: 13px; font-weight: 600; }
+  .subtitle { font-weight: 600; color: #444; margin: 0.2rem 0 0; font-size: 13.5px; }
+  .contact { color: #555; margin: 0.25rem 0 0; font-size: 12px; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+  .dates, .location { color: #666; font-size: 11.5px; white-space: nowrap; }
+  .location { font-style: italic; margin: 0 0 0.15rem; }
+  section p { margin: 0.2rem 0; }
+  article { margin-bottom: 0.6rem; }
+  ul { margin: 0.25rem 0 0; padding-left: 1.1rem; }
+  li { margin: 0.1rem 0; color: #333; }
+  table.skills { border-collapse: collapse; width: 100%; }
+  table.skills td { vertical-align: top; padding: 0.12rem 0; font-size: 12.5px; }
+  table.skills td.label { font-weight: 600; width: 180px; padding-right: 0.75rem; white-space: nowrap; }
+  @media print {
+    body { margin: 0 auto; }
+  }
 </style>
 </head>
 <body>
   <h1>${esc(cv.name)}</h1>
-  ${cv.title ? `<p>${esc(cv.title)}</p>` : ""}
+  ${cv.title ? `<p class="subtitle">${esc(cv.title)}</p>` : ""}
   <p class="contact">${contactLine}${contactLine && links ? " &middot; " : ""}${links}</p>
   ${cv.summary ? `<section><h2>Summary</h2><p>${esc(cv.summary)}</p></section>` : ""}
   ${skills}

@@ -121,33 +121,23 @@ export function FileTextInput({
         <label className="text-[13px] font-medium text-text-secondary">
           {label}
         </label>
-        <div className="flex items-center gap-2">
-          {showText ? (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="rounded-full px-3 py-1.5 text-[12px] font-medium text-text-secondary hover:text-foreground transition"
-            >
-              Clear
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowText(true)}
-              className="rounded-full px-3 py-1.5 text-[12px] font-medium text-text-secondary hover:text-foreground transition"
-            >
-              Paste text instead
-            </button>
-          )}
+        {showText ? (
           <button
             type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="rounded-full bg-fill-secondary hover:bg-black/10 dark:hover:bg-white/15 px-3 py-1.5 text-[12px] font-medium text-accent transition disabled:opacity-50"
+            onClick={handleClear}
+            className="rounded-full px-3 py-1.5 text-[12px] font-medium text-text-secondary hover:text-foreground transition"
           >
-            {uploading ? "Reading…" : "Upload PDF/DOCX"}
+            Clear
           </button>
-        </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowText(true)}
+            className="rounded-full px-3 py-1.5 text-[12px] font-medium text-text-secondary hover:text-foreground transition"
+          >
+            Paste text instead
+          </button>
+        )}
         <input
           ref={fileInputRef}
           type="file"
@@ -174,13 +164,20 @@ export function FileTextInput({
           </p>
         </>
       ) : (
-        <div className="flex min-h-[144px] flex-col items-center justify-center gap-2 text-center border border-dashed border-hairline rounded-lg">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="flex min-h-[144px] flex-col items-center justify-center gap-2 text-center border border-dashed border-hairline rounded-lg hover:border-accent/50 hover:bg-accent/5 transition disabled:opacity-50"
+        >
           <UploadIcon />
-          <p className="text-[14px] font-medium">Drag & drop a file here</p>
-          <p className="text-[12px] text-text-secondary">
-            PDF or DOCX, or upload above
+          <p className="text-[14px] font-medium">
+            {uploading ? "Reading…" : "Drag & drop a file here"}
           </p>
-        </div>
+          <p className="text-[12px] text-text-secondary">
+            {uploading ? "" : "or click to browse — PDF or DOCX"}
+          </p>
+        </button>
       )}
       {error && <p className="text-[12px] text-red-600">{error}</p>}
     </div>

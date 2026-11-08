@@ -1,17 +1,42 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #fbfbfd;
-  --surface: #ffffff;
-  --foreground: #1d1d1f;
-  --text-secondary: #6e6e73;
-  --hairline: rgba(0, 0, 0, 0.08);
-  --fill-secondary: rgba(0, 0, 0, 0.055);
-  --accent: #0071e3;
-  --accent-hover: #0077ed;
-  --accent-active: #006edb;
+  --background: #f2f6fa;
+  --surface: rgba(255, 255, 255, 0.65);
+  --foreground: #101d2e;
+  --text-secondary: #4a5a6e;
+  --hairline: rgba(16, 29, 46, 0.1);
+  --fill-secondary: rgba(16, 29, 46, 0.055);
+  --accent: #155ea6;
+  --accent-hover: #1368b8;
+  --accent-active: #0f4d8c;
+  --accent-ink: #ffffff;
   --success: #248a3d;
+  --shadow-color: rgba(16, 29, 46, 0.14);
+  --blob-1: #a9d0ff;
+  --blob-2: #ffdf9e;
+  --blob-3: #c9d3ff;
   --radius-card: 18px;
+}
+
+:root.dark {
+  --background: #080e18;
+  --surface: rgba(20, 28, 40, 0.6);
+  --foreground: #eef2f7;
+  --text-secondary: #9fb0c3;
+  --hairline: rgba(255, 255, 255, 0.1);
+  --fill-secondary: rgba(255, 255, 255, 0.07);
+  --accent: #5b9df0;
+  --accent-hover: #6fadfa;
+  --accent-active: #4a8de0;
+  --accent-ink: #071224;
+  --success: #32d74b;
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --blob-1: #123a66;
+  --blob-2: #5a3d0c;
+  --blob-3: #22285e;
 }
 
 @theme inline {
@@ -24,6 +49,7 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-active: var(--accent-active);
+  --color-accent-ink: var(--accent-ink);
   --color-success: var(--success);
   --radius-card: var(--radius-card);
   --font-sans:
@@ -32,23 +58,16 @@
   --font-mono: ui-monospace, "SF Mono", "Menlo", "Consolas", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --surface: #1c1c1e;
-    --foreground: #f5f5f7;
-    --text-secondary: #86868b;
-    --hairline: rgba(255, 255, 255, 0.12);
-    --fill-secondary: rgba(255, 255, 255, 0.08);
-    --accent: #2997ff;
-    --accent-hover: #47a8ff;
-    --accent-active: #1c8afa;
-    --success: #32d74b;
-  }
-}
-
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 body {
@@ -57,6 +76,22 @@ body {
   font-family: var(--font-sans);
   font-feature-settings: "kern";
   -webkit-font-smoothing: antialiased;
+}
+
+.bg-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.bg-blobs span {
+  position: absolute;
+  border-radius: 9999px;
+  opacity: 0.55;
+  filter: blur(70px);
+  transition: background-color 0.3s ease;
 }
 
 :focus-visible {
